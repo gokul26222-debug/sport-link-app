@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { BottomNav } from "@/components/BottomNav";
 import { toast } from "sonner";
 
@@ -8,10 +8,20 @@ const mockCourts = [
   { name: "Gymnase République", zone: "10e Arrondissement", sports: "Basketball, Volleyball", price: "€8/hr", slots: ["12:00", "17:00", "19:30"] },
 ];
 
-const dateFilters = ["Today", "Tomorrow", "This week"];
+const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+function getNext9Days() {
+  const today = new Date();
+  return Array.from({ length: 9 }, (_, i) => {
+    const d = new Date(today);
+    d.setDate(today.getDate() + i);
+    return { date: d.getDate(), day: dayNames[d.getDay()], isToday: i === 0, key: i };
+  });
+}
 
 const BookPage = () => {
-  const [activeDate, setActiveDate] = useState("Today");
+  const dates = useMemo(() => getNext9Days(), []);
+  const [activeDate, setActiveDate] = useState(0);
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -19,19 +29,30 @@ const BookPage = () => {
         <h1 className="text-2xl font-bold text-foreground">Book a court</h1>
       </div>
 
-      <div className="px-5 mt-4">
+      <div className="px-5 mt-4 overflow-x-auto scrollbar-hide">
         <div className="flex gap-2">
-          {dateFilters.map((d) => (
+          {dates.map((d) => (
             <button
-              key={d}
-              onClick={() => setActiveDate(d)}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                activeDate === d
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-transparent text-muted-foreground border border-[#333]"
-              }`}
+              key={d.key}
+              onClick={() => setActiveDate(d.key)}
+              className="flex flex-col items-center justify-center flex-shrink-0 transition-all"
+              style={{
+                width: 40,
+                height: 52,
+                borderRadius: 12,
+                background: activeDate === d.key ? "#6C5CE7" : "#13131A",
+                border: activeDate === d.key ? "none" : "0.5px solid #2a2a3a",
+              }}
             >
-              {d}
+              <span className="text-sm font-semibold" style={{ color: activeDate === d.key ? "#fff" : "#888" }}>
+                {d.date}
+              </span>
+              <span className="text-[10px]" style={{ color: activeDate === d.key ? "rgba(255,255,255,0.7)" : "#888" }}>
+                {d.day}
+              </span>
+              {d.isToday && (
+                <span className="block w-1.5 h-1.5 rounded-full mt-0.5" style={{ background: "#00b894" }} />
+              )}
             </button>
           ))}
         </div>
