@@ -1,15 +1,12 @@
-import { Sport } from "@/lib/mockData";
+import { Sport, sportEmojis } from "@/lib/mockData";
 
-const sportEmojis: Record<Sport, string> = {
-  Football: "⚽",
-  Cricket: "🏏",
-  Badminton: "🏸",
-};
-
-const sportColors: Record<Sport, string> = {
-  Football: "bg-primary/20 text-primary",
-  Cricket: "bg-success/20 text-success",
-  Badminton: "bg-warning/20 text-warning",
+const sportBgColors: Record<Sport, string> = {
+  Football: "bg-primary/20",
+  Basketball: "bg-warning/20",
+  Tennis: "bg-success/20",
+  Volleyball: "bg-destructive/20",
+  Badminton: "bg-accent/20",
+  Padel: "bg-success/20",
 };
 
 export const SportIcon = ({ sport, size = "md" }: { sport: Sport; size?: "sm" | "md" | "lg" }) => {
@@ -20,7 +17,7 @@ export const SportIcon = ({ sport, size = "md" }: { sport: Sport; size?: "sm" | 
   };
 
   return (
-    <div className={`${sportColors[sport]} ${sizeClasses[size]} rounded-xl flex items-center justify-center`}>
+    <div className={`${sportBgColors[sport]} ${sizeClasses[size]} rounded-xl flex items-center justify-center`}>
       {sportEmojis[sport]}
     </div>
   );

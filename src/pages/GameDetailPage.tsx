@@ -4,6 +4,13 @@ import { SportIcon } from "@/components/SportIcon";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, MapPin, Clock, Users, User } from "lucide-react";
 import { toast } from "sonner";
+import { Level } from "@/lib/mockData";
+
+const levelColors: Record<Level, string> = {
+  Beginner: "bg-success/15 text-success",
+  Intermediate: "bg-warning/15 text-warning",
+  Advanced: "bg-destructive/15 text-destructive",
+};
 
 const GameDetailPage = () => {
   const { id } = useParams();
@@ -45,7 +52,12 @@ const GameDetailPage = () => {
         <div className="flex items-start gap-4">
           <SportIcon sport={game.sport} size="lg" />
           <div>
-            <h1 className="text-2xl font-bold text-foreground tracking-tight">{game.sport}</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-bold text-foreground tracking-tight">{game.sport}</h1>
+              <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${levelColors[game.level]}`}>
+                {game.level}
+              </span>
+            </div>
             <p className="text-sm text-muted-foreground mt-0.5">Hosted by {game.host}</p>
           </div>
         </div>
@@ -84,7 +96,6 @@ const GameDetailPage = () => {
           </div>
         </div>
 
-        {/* Description */}
         {game.description && (
           <div className="bg-card rounded-2xl p-4 border border-border/50">
             <h3 className="text-sm font-semibold text-foreground mb-1">About this game</h3>
@@ -92,7 +103,6 @@ const GameDetailPage = () => {
           </div>
         )}
 
-        {/* Players preview */}
         <div className="bg-card rounded-2xl p-4 border border-border/50">
           <h3 className="text-sm font-semibold text-foreground mb-3">Players joined</h3>
           <div className="flex -space-x-2">

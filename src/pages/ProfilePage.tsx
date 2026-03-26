@@ -1,11 +1,8 @@
 import { useApp } from "@/lib/appContext";
 import { BottomNav } from "@/components/BottomNav";
 import { Button } from "@/components/ui/button";
-import { Sport } from "@/lib/mockData";
+import { Sport, allSports, sportEmojis } from "@/lib/mockData";
 import { User, LogOut, Trophy } from "lucide-react";
-
-const sports: Sport[] = ["Football", "Cricket", "Badminton"];
-const sportEmojis: Record<Sport, string> = { Football: "⚽", Cricket: "🏏", Badminton: "🏸" };
 
 const ProfilePage = () => {
   const { user, logout, updateProfile, joinedGameIds, games } = useApp();
@@ -32,12 +29,12 @@ const ProfilePage = () => {
         {/* Preferred Sport */}
         <div className="bg-card rounded-2xl p-5 border border-border/50">
           <h3 className="text-sm font-semibold text-foreground mb-3">Preferred Sport</h3>
-          <div className="flex gap-2">
-            {sports.map((s) => (
+          <div className="flex gap-2 flex-wrap">
+            {allSports.slice(0, 4).map((s) => (
               <button
                 key={s}
                 onClick={() => updateProfile({ preferredSport: s })}
-                className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                className={`px-3 py-2 rounded-xl text-sm font-medium transition-all ${
                   user?.preferredSport === s
                     ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25"
                     : "bg-secondary text-muted-foreground hover:text-foreground"
