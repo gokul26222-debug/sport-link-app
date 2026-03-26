@@ -1,16 +1,13 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useApp } from "@/lib/appContext";
-import { Sport } from "@/lib/mockData";
+import { Sport, allSports, sportEmojis } from "@/lib/mockData";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { BottomNav } from "@/components/BottomNav";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
-
-const sports: Sport[] = ["Football", "Cricket", "Badminton"];
-const sportEmojis: Record<Sport, string> = { Football: "⚽", Cricket: "🏏", Badminton: "🏸" };
 
 const CreateGamePage = () => {
   const navigate = useNavigate();
@@ -38,6 +35,7 @@ const CreateGamePage = () => {
       maxPlayers: parseInt(maxPlayers) || 10,
       host: user?.name || "You",
       description,
+      level: "Beginner",
     });
     toast.success("Game created! 🎉");
     navigate("/");
@@ -57,13 +55,13 @@ const CreateGamePage = () => {
         {/* Sport Selection */}
         <div>
           <label className="text-sm font-medium text-muted-foreground mb-2 block">Sport</label>
-          <div className="flex gap-2">
-            {sports.map((s) => (
+          <div className="flex gap-2 flex-wrap">
+            {allSports.map((s) => (
               <button
                 key={s}
                 type="button"
                 onClick={() => setSport(s)}
-                className={`flex-1 py-3 rounded-xl text-sm font-medium transition-all ${
+                className={`px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
                   sport === s
                     ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25"
                     : "bg-card text-muted-foreground border border-border/50 hover:text-foreground"
@@ -78,7 +76,7 @@ const CreateGamePage = () => {
         <div>
           <label className="text-sm font-medium text-muted-foreground mb-1.5 block">Location *</label>
           <Input
-            placeholder="e.g., Koramangala Ground"
+            placeholder="e.g., Champ de Mars, 7e"
             value={location}
             onChange={(e) => setLocation(e.target.value)}
             className="h-12 rounded-2xl bg-card border-border/50 text-foreground placeholder:text-muted-foreground"
