@@ -17,9 +17,9 @@ const HomePage = () => {
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm text-muted-foreground">Hey, {user?.name?.split(" ")[0]} 👋</p>
-            <h1 className="font-heading text-xl font-bold text-foreground">Find a Game</h1>
+            <h1 className="text-xl font-bold text-foreground tracking-tight">Find a Game</h1>
           </div>
-          <div className="flex items-center gap-1 text-xs text-muted-foreground bg-secondary px-3 py-1.5 rounded-full">
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground bg-card px-3 py-1.5 rounded-full border border-border/50">
             <MapPin className="w-3 h-3" />
             Bangalore
           </div>
@@ -31,10 +31,10 @@ const HomePage = () => {
             <button
               key={f}
               onClick={() => setSportFilter(f)}
-              className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
+              className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
                 sportFilter === f
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-secondary text-secondary-foreground"
+                  ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25"
+                  : "bg-card text-muted-foreground border border-border/50 hover:text-foreground"
               }`}
             >
               {f}
@@ -48,7 +48,7 @@ const HomePage = () => {
         {filtered.length === 0 ? (
           <div className="text-center py-16 text-muted-foreground">
             <p className="text-4xl mb-3">🏟️</p>
-            <p className="font-medium">No games found</p>
+            <p className="font-medium text-foreground">No games found</p>
             <p className="text-sm mt-1">Try a different filter or create a game!</p>
           </div>
         ) : (
