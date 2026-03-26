@@ -7,6 +7,7 @@ import { AppProvider } from "@/lib/appContext";
 import Index from "./pages/Index";
 import CreateGamePage from "./pages/CreateGamePage";
 import GameDetailPage from "./pages/GameDetailPage";
+import MatchPage from "./pages/MatchPage";
 import ProfilePage from "./pages/ProfilePage";
 import NotFound from "./pages/NotFound";
 
@@ -23,6 +24,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/create" element={<CreateGamePage />} />
             <Route path="/game/:id" element={<GameDetailPage />} />
+            <Route path="/match" element={<MatchPage />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
