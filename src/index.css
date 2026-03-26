@@ -81,3 +81,14 @@
     background-color: hsl(var(--sport-badminton));
   }
 }
+
+@keyframes bounceIn {
+  0% { transform: scale(0.7); opacity: 0; }
+  60% { transform: scale(1.08); opacity: 1; }
+  80% { transform: scale(0.97); }
+  100% { transform: scale(1); }
+}
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(0,184,148,0.6); }
+  70% { box-shadow: 0 0 0 14px rgba(0,184,148,0); }
+}
