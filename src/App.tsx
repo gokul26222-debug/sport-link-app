@@ -7,6 +7,7 @@ import { AppProvider } from "@/lib/appContext";
 import Index from "./pages/Index";
 import CreateGamePage from "./pages/CreateGamePage";
 import GameDetailPage from "./pages/GameDetailPage";
+import MatchPage from "./pages/MatchPage";
 import ProfilePage from "./pages/ProfilePage";
 import NotFound from "./pages/NotFound";
 
