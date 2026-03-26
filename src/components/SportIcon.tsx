@@ -7,9 +7,9 @@ const sportEmojis: Record<Sport, string> = {
 };
 
 const sportColors: Record<Sport, string> = {
-  Football: "bg-sport-football",
-  Cricket: "bg-sport-cricket",
-  Badminton: "bg-sport-badminton",
+  Football: "bg-primary/20 text-primary",
+  Cricket: "bg-success/20 text-success",
+  Badminton: "bg-warning/20 text-warning",
 };
 
 export const SportIcon = ({ sport, size = "md" }: { sport: Sport; size?: "sm" | "md" | "lg" }) => {
@@ -20,7 +20,7 @@ export const SportIcon = ({ sport, size = "md" }: { sport: Sport; size?: "sm" | 
   };
 
   return (
-    <div className={`${sportColors[sport]} ${sizeClasses[size]} rounded-xl flex items-center justify-center text-primary-foreground`}>
+    <div className={`${sportColors[sport]} ${sizeClasses[size]} rounded-xl flex items-center justify-center`}>
       {sportEmojis[sport]}
     </div>
   );

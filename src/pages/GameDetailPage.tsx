@@ -38,24 +38,24 @@ const GameDetailPage = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="bg-card border-b border-border px-5 pt-6 pb-5">
-        <button onClick={() => navigate(-1)} className="flex items-center gap-1 text-muted-foreground mb-4">
+      <div className="px-5 pt-6 pb-5">
+        <button onClick={() => navigate(-1)} className="flex items-center gap-1 text-muted-foreground mb-4 hover:text-foreground transition-colors">
           <ArrowLeft className="w-4 h-4" /> Back
         </button>
         <div className="flex items-start gap-4">
           <SportIcon sport={game.sport} size="lg" />
           <div>
-            <h1 className="font-heading text-2xl font-bold text-foreground">{game.sport}</h1>
+            <h1 className="text-2xl font-bold text-foreground tracking-tight">{game.sport}</h1>
             <p className="text-sm text-muted-foreground mt-0.5">Hosted by {game.host}</p>
           </div>
         </div>
       </div>
 
       {/* Details */}
-      <div className="px-5 py-6 space-y-5">
-        <div className="space-y-3">
+      <div className="px-5 py-4 space-y-4">
+        <div className="bg-card rounded-2xl p-4 border border-border/50 space-y-3">
           <div className="flex items-center gap-3 text-foreground">
-            <div className="w-9 h-9 bg-secondary rounded-lg flex items-center justify-center">
+            <div className="w-9 h-9 bg-secondary rounded-xl flex items-center justify-center">
               <MapPin className="w-4 h-4 text-muted-foreground" />
             </div>
             <div>
@@ -64,7 +64,7 @@ const GameDetailPage = () => {
             </div>
           </div>
           <div className="flex items-center gap-3 text-foreground">
-            <div className="w-9 h-9 bg-secondary rounded-lg flex items-center justify-center">
+            <div className="w-9 h-9 bg-secondary rounded-xl flex items-center justify-center">
               <Clock className="w-4 h-4 text-muted-foreground" />
             </div>
             <div>
@@ -72,7 +72,7 @@ const GameDetailPage = () => {
             </div>
           </div>
           <div className="flex items-center gap-3 text-foreground">
-            <div className="w-9 h-9 bg-secondary rounded-lg flex items-center justify-center">
+            <div className="w-9 h-9 bg-secondary rounded-xl flex items-center justify-center">
               <Users className="w-4 h-4 text-muted-foreground" />
             </div>
             <div>
@@ -86,14 +86,14 @@ const GameDetailPage = () => {
 
         {/* Description */}
         {game.description && (
-          <div className="bg-card rounded-xl p-4 border border-border">
+          <div className="bg-card rounded-2xl p-4 border border-border/50">
             <h3 className="text-sm font-semibold text-foreground mb-1">About this game</h3>
             <p className="text-sm text-muted-foreground leading-relaxed">{game.description}</p>
           </div>
         )}
 
         {/* Players preview */}
-        <div className="bg-card rounded-xl p-4 border border-border">
+        <div className="bg-card rounded-2xl p-4 border border-border/50">
           <h3 className="text-sm font-semibold text-foreground mb-3">Players joined</h3>
           <div className="flex -space-x-2">
             {Array.from({ length: Math.min(game.currentPlayers, 6) }).map((_, i) => (
@@ -114,14 +114,14 @@ const GameDetailPage = () => {
       </div>
 
       {/* Bottom CTA */}
-      <div className="fixed bottom-0 left-0 right-0 p-5 bg-card border-t border-border">
+      <div className="fixed bottom-0 left-0 right-0 p-5 bg-card/80 backdrop-blur-xl border-t border-border/50">
         <div className="max-w-lg mx-auto">
           {isJoined ? (
             <div className="flex gap-3">
-              <div className="flex-1 flex items-center justify-center bg-secondary rounded-xl text-sm font-medium text-secondary-foreground">
+              <div className="flex-1 flex items-center justify-center bg-success/15 text-success rounded-2xl text-sm font-medium">
                 ✓ You're in!
               </div>
-              <Button variant="outline" onClick={handleLeave} className="h-12 rounded-xl px-6">
+              <Button variant="outline" onClick={handleLeave} className="h-12 rounded-2xl px-6 border-border/50 text-muted-foreground hover:text-foreground">
                 Leave
               </Button>
             </div>
@@ -129,7 +129,7 @@ const GameDetailPage = () => {
             <Button
               onClick={handleJoin}
               disabled={isFull}
-              className="w-full h-12 rounded-xl text-base font-semibold"
+              className="w-full h-12 rounded-2xl text-base font-semibold shadow-lg shadow-primary/25"
             >
               {isFull ? "Game is Full" : "Join Game"}
             </Button>
