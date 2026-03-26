@@ -1,8 +1,9 @@
-import { Home, PlusCircle, User } from "lucide-react";
+import { Home, PlusCircle, Users, User } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 const tabs = [
   { icon: Home, label: "Home", path: "/" },
+  { icon: Users, label: "Match", path: "/match" },
   { icon: PlusCircle, label: "Create", path: "/create" },
   { icon: User, label: "Profile", path: "/profile" },
 ];
