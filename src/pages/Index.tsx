@@ -1,10 +1,10 @@
 import { useApp } from "@/lib/appContext";
-import LoginPage from "./LoginPage";
+import OnboardingPage from "./OnboardingPage";
 import HomePage from "./HomePage";
 
 const Index = () => {
   const { isLoggedIn } = useApp();
-  return isLoggedIn ? <HomePage /> : <LoginPage />;
+  return isLoggedIn ? <HomePage /> : <OnboardingPage />;
 };
 
 export default Index;
