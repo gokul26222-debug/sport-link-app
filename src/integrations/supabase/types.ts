@@ -14,7 +14,169 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      bookings: {
+        Row: {
+          booked_at: string
+          court_name: string
+          date: string
+          id: string
+          slot_time: string
+          sport: string
+          user_id: string
+        }
+        Insert: {
+          booked_at?: string
+          court_name: string
+          date: string
+          id?: string
+          slot_time: string
+          sport: string
+          user_id: string
+        }
+        Update: {
+          booked_at?: string
+          court_name?: string
+          date?: string
+          id?: string
+          slot_time?: string
+          sport?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookings_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      game_participants: {
+        Row: {
+          game_id: string
+          id: string
+          joined_at: string
+          user_id: string
+        }
+        Insert: {
+          game_id: string
+          id?: string
+          joined_at?: string
+          user_id: string
+        }
+        Update: {
+          game_id?: string
+          id?: string
+          joined_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_participants_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "games"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "game_participants_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      games: {
+        Row: {
+          created_at: string
+          current_players: number
+          date: string
+          description: string | null
+          distance: string | null
+          host_id: string | null
+          id: string
+          level: string | null
+          location: string
+          max_players: number
+          sport: string
+          time: string
+        }
+        Insert: {
+          created_at?: string
+          current_players?: number
+          date: string
+          description?: string | null
+          distance?: string | null
+          host_id?: string | null
+          id?: string
+          level?: string | null
+          location: string
+          max_players?: number
+          sport: string
+          time: string
+        }
+        Update: {
+          created_at?: string
+          current_players?: number
+          date?: string
+          description?: string | null
+          distance?: string | null
+          host_id?: string | null
+          id?: string
+          level?: string | null
+          location?: string
+          max_players?: number
+          sport?: string
+          time?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "games_host_id_fkey"
+            columns: ["host_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          area: string | null
+          avatar_url: string | null
+          created_at: string
+          email: string | null
+          id: string
+          name: string | null
+          preferred_sports: string[] | null
+          skill_level: string | null
+          updated_at: string
+        }
+        Insert: {
+          area?: string | null
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          id: string
+          name?: string | null
+          preferred_sports?: string[] | null
+          skill_level?: string | null
+          updated_at?: string
+        }
+        Update: {
+          area?: string | null
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string | null
+          preferred_sports?: string[] | null
+          skill_level?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
