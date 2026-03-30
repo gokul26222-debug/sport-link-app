@@ -1,25 +1,30 @@
-import React, { createContext, useContext, useState, ReactNode } from "react";
-import { Game, Sport, mockGames } from "./mockData";
+import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import type { User as SupabaseUser, Session } from "@supabase/supabase-js";
 
-interface User {
-  name: string;
-  email: string;
-  preferredSport: Sport;
+interface Profile {
+  id: string;
+  name: string | null;
+  email: string | null;
+  avatar_url: string | null;
+  preferred_sports: string[];
+  skill_level: string | null;
+  area: string | null;
 }
 
 interface AppState {
   isLoggedIn: boolean;
-  user: User | null;
-  games: Game[];
-  joinedGameIds: string[];
-  login: (name: string, email: string) => void;
-  logout: () => void;
-  joinGame: (gameId: string) => void;
-  leaveGame: (gameId: string) => void;
-  createGame: (game: Omit<Game, "id">) => void;
-  updateProfile: (user: Partial<User>) => void;
-  sportFilter: Sport | "All";
-  setSportFilter: (filter: Sport | "All") => void;
+  user: SupabaseUser | null;
+  profile: Profile | null;
+  session: Session | null;
+  loading: boolean;
+  signUp: (email: string, password: string, name: string) => Promise<{ error: any }>;
+  signIn: (email: string, password: string) => Promise<{ error: any }>;
+  signInWithGoogle: () => Promise<void>;
+  signInWithApple: () => Promise<void>;
+  logout: () => Promise<void>;
+  updateProfile: (updates: Partial<Profile>) => Promise<void>;
+  refreshProfile: () => Promise<void>;
 }
 
 const AppContext = createContext<AppState | null>(null);
@@ -31,57 +36,117 @@ export const useApp = () => {
 };
 
 export const AppProvider = ({ children }: { children: ReactNode }) => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
-  const [games, setGames] = useState<Game[]>(mockGames);
-  const [joinedGameIds, setJoinedGameIds] = useState<string[]>([]);
-  const [sportFilter, setSportFilter] = useState<Sport | "All">("All");
+  const [session, setSession] = useState<Session | null>(null);
+  const [user, setUser] = useState<SupabaseUser | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const login = (name: string, email: string) => {
-    setUser({ name, email, preferredSport: "Football" });
-    setIsLoggedIn(true);
+  const fetchProfile = async (userId: string) => {
+    const { data } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", userId)
+      .single();
+    if (data) {
+      setProfile({
+        id: data.id,
+        name: data.name,
+        email: data.email,
+        avatar_url: data.avatar_url,
+        preferred_sports: data.preferred_sports || [],
+        skill_level: data.skill_level,
+        area: data.area,
+      });
+    }
   };
 
-  const logout = () => {
-    setUser(null);
-    setIsLoggedIn(false);
-    setJoinedGameIds([]);
-  };
-
-  const joinGame = (gameId: string) => {
-    if (joinedGameIds.includes(gameId)) return;
-    setJoinedGameIds((prev) => [...prev, gameId]);
-    setGames((prev) =>
-      prev.map((g) =>
-        g.id === gameId ? { ...g, currentPlayers: g.currentPlayers + 1 } : g
-      )
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+        if (session?.user) {
+          setTimeout(() => fetchProfile(session.user.id), 0);
+        } else {
+          setProfile(null);
+        }
+        setLoading(false);
+      }
     );
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        fetchProfile(session.user.id);
+      }
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const signUp = async (email: string, password: string, name: string) => {
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { name },
+        emailRedirectTo: window.location.origin,
+      },
+    });
+    return { error };
   };
 
-  const leaveGame = (gameId: string) => {
-    setJoinedGameIds((prev) => prev.filter((id) => id !== gameId));
-    setGames((prev) =>
-      prev.map((g) =>
-        g.id === gameId ? { ...g, currentPlayers: g.currentPlayers - 1 } : g
-      )
-    );
+  const signIn = async (email: string, password: string) => {
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    return { error };
   };
 
-  const createGame = (game: Omit<Game, "id">) => {
-    const newGame: Game = { ...game, id: Date.now().toString() };
-    setGames((prev) => [newGame, ...prev]);
+  const signInWithGoogle = async () => {
+    await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: window.location.origin },
+    });
   };
 
-  const updateProfile = (updates: Partial<User>) => {
-    setUser((prev) => (prev ? { ...prev, ...updates } : prev));
+  const signInWithApple = async () => {
+    await supabase.auth.signInWithOAuth({
+      provider: "apple",
+      options: { redirectTo: window.location.origin },
+    });
+  };
+
+  const logout = async () => {
+    await supabase.auth.signOut();
+    setProfile(null);
+  };
+
+  const updateProfile = async (updates: Partial<Profile>) => {
+    if (!user) return;
+    await supabase.from("profiles").update(updates).eq("id", user.id);
+    await fetchProfile(user.id);
+  };
+
+  const refreshProfile = async () => {
+    if (user) await fetchProfile(user.id);
   };
 
   return (
     <AppContext.Provider
       value={{
-        isLoggedIn, user, games, joinedGameIds,
-        login, logout, joinGame, leaveGame, createGame, updateProfile,
-        sportFilter, setSportFilter,
+        isLoggedIn: !!session,
+        user,
+        profile,
+        session,
+        loading,
+        signUp,
+        signIn,
+        signInWithGoogle,
+        signInWithApple,
+        logout,
+        updateProfile,
+        refreshProfile,
       }}
     >
       {children}
