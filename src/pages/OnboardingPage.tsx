@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { useApp } from "@/lib/appContext";
+import { lovable } from "@/integrations/lovable/index";
 import { toast } from "sonner";
 
 const allSports = [
