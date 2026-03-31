@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { useApp } from "@/lib/appContext";
+import { lovable } from "@/integrations/lovable/index";
 import { toast } from "sonner";
 
 const allSports = [
@@ -53,7 +54,18 @@ const OnboardingPage = () => {
 
   const handleGoogleLogin = async () => {
     setLoading("google");
-    await signInWithGoogle();
+    try {
+      const result = await lovable.auth.signInWithOAuth("google", {
+        redirect_uri: window.location.origin,
+      });
+      if (result?.error) {
+        toast.error("Google sign-in failed");
+        setLoading(null);
+      }
+    } catch {
+      toast.error("Google sign-in failed");
+      setLoading(null);
+    }
   };
 
   const handleAppleLogin = async () => {
