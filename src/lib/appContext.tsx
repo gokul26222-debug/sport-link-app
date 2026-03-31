@@ -104,10 +104,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signInWithGoogle = async () => {
-    await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo: window.location.origin },
-    });
+    // Google sign-in is now handled via lovable.auth in OnboardingPage
+    console.warn("Use lovable.auth.signInWithOAuth('google') instead");
   };
 
   const signInWithApple = async () => {
