@@ -25,14 +25,14 @@ export const BottomNav = () => {
             >
               <span
                 className={`text-lg w-8 h-8 flex items-center justify-center rounded-xl transition-all ${
-                  isActive ? "bg-[#6C5CE722]" : ""
+                  isActive ? "bg-[#d4a01722]" : ""
                 }`}
               >
                 {tab.emoji}
               </span>
               <span
                 className="text-[10px] font-medium"
-                style={{ color: isActive ? "#6C5CE7" : "#666" }}
+                style={{ color: isActive ? "#d4a017" : "#666" }}
               >
                 {tab.label}
               </span>
