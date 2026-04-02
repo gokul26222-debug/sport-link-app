@@ -7,6 +7,7 @@ import MatchPage from "./pages/MatchPage";
 import BookPage from "./pages/BookPage";
 import LeaderboardPage from "./pages/LeaderboardPage";
 import ProfilePage from "./pages/ProfilePage";
+import GameDetailPage from "./pages/GameDetailPage";
 import NotFound from "./pages/NotFound";
 
 const App = () => (
@@ -20,6 +21,7 @@ const App = () => (
           <Route path="/book" element={<BookPage />} />
           <Route path="/leaderboard" element={<LeaderboardPage />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/game/:id" element={<GameDetailPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

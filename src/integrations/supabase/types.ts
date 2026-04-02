@@ -99,9 +99,15 @@ export type Database = {
           id: string
           level: string | null
           location: string
+          location_lat: number | null
+          location_lng: number | null
           max_players: number
+          scheduled_at: string | null
+          skill_level: string | null
           sport: string
+          status: string | null
           time: string
+          title: string | null
         }
         Insert: {
           created_at?: string
@@ -113,9 +119,15 @@ export type Database = {
           id?: string
           level?: string | null
           location: string
+          location_lat?: number | null
+          location_lng?: number | null
           max_players?: number
+          scheduled_at?: string | null
+          skill_level?: string | null
           sport: string
+          status?: string | null
           time: string
+          title?: string | null
         }
         Update: {
           created_at?: string
@@ -127,9 +139,15 @@ export type Database = {
           id?: string
           level?: string | null
           location?: string
+          location_lat?: number | null
+          location_lng?: number | null
           max_players?: number
+          scheduled_at?: string | null
+          skill_level?: string | null
           sport?: string
+          status?: string | null
           time?: string
+          title?: string | null
         }
         Relationships: [
           {
@@ -140,6 +158,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      messages: {
+        Row: {
+          content: string
+          created_at: string
+          game_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          game_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          game_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       profiles: {
         Row: {
