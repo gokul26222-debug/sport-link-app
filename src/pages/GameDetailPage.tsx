@@ -140,6 +140,8 @@ const GameDetailPage = () => {
 
   const handleLeave = async () => {
     if (!user || !game) return;
+    setShowPayment(false);
+    setShowConfirmation(false);
     await supabase.from("game_participants").delete().eq("game_id", game.id).eq("user_id", user.id);
     await supabase.from("games").update({ current_players: game.current_players - 1 }).eq("id", game.id);
     setGame({ ...game, current_players: game.current_players - 1 });
