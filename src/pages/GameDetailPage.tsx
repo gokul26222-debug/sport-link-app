@@ -8,6 +8,8 @@ import { useState, useEffect, useRef } from "react";
 import { format } from "date-fns";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import PaymentSheet from "@/components/PaymentSheet";
+import PaymentConfirmation from "@/components/PaymentConfirmation";
 
 const sportConfig: Record<string, { emoji: string; bg: string }> = {
   Football: { emoji: "⚽", bg: "bg-green-900/60" },
@@ -52,6 +54,8 @@ const GameDetailPage = () => {
   const [hostProfile, setHostProfile] = useState<any>(null);
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<L.Map | null>(null);
+  const [showPayment, setShowPayment] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
 
   useEffect(() => {
     const fetchAll = async () => {
@@ -114,14 +118,23 @@ const GameDetailPage = () => {
     return () => { map.remove(); mapInstance.current = null; };
   }, [game]);
 
-  const handleJoin = async () => {
+  const handleJoin = () => {
     if (!user || !game) return;
+    setShowPayment(true);
+  };
+
+  const handlePaymentConfirm = async () => {
+    if (!user || !game) return;
+    setShowPayment(false);
     const { error } = await supabase.from("game_participants").insert({ game_id: game.id, user_id: user.id });
     if (!error) {
       await supabase.from("games").update({ current_players: game.current_players + 1 }).eq("id", game.id);
       setGame({ ...game, current_players: game.current_players + 1 });
+      const { data: prof } = await supabase.from("profiles").select("id, name, avatar_url").eq("id", user.id).maybeSingle();
+      setParticipants(prev => [...prev, { id: crypto.randomUUID(), user_id: user.id, profile: prof || undefined }]);
       setIsJoined(true);
       toast.success("You joined the game! 🎉");
+      setShowConfirmation(true);
     }
   };
 
@@ -309,6 +322,18 @@ const GameDetailPage = () => {
           )}
         </div>
       </div>
+      <PaymentSheet
+        open={showPayment}
+        onClose={() => setShowPayment(false)}
+        onConfirm={handlePaymentConfirm}
+        game={game}
+      />
+      <PaymentConfirmation
+        open={showConfirmation}
+        game={game}
+        participants={participants}
+        onClose={() => setShowConfirmation(false)}
+      />
     </div>
   );
 };
