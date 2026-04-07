@@ -23,7 +23,7 @@ const PaymentConfirmation = ({ open, game, participants, onClose }: PaymentConfi
     : `${game.date}, ${game.time}`;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-5">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-5">
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
       <div className="relative w-full max-w-sm bg-card border border-border rounded-3xl p-6 text-center animate-in zoom-in-95 duration-300">
         {/* Success icon */}
