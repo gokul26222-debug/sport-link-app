@@ -1,67 +1,48 @@
 
 
-## Plan: Connect PlayPal to a Full Backend with Lovable Cloud
+## Plan: Add Payment Wireframe Flow to Game Joining
 
-### What You Get
-- **Real authentication** — email/password, Google, and Apple sign-in
-- **Database** — persistent storage for games, bookings, and user data
-- **User profiles** — name, avatar, sports preferences, skill level, area
-- **Data survives refresh** — no more losing everything on page reload
+### What This Does
+When a user taps "Join Game", instead of immediately joining, they'll see a **payment sheet** with card, Apple Pay, and Google Pay options. After confirming payment, they see a **confirmation screen** showing the event details and a list of players already in the game.
 
-### Step 1: Enable Lovable Cloud
-Set up Lovable Cloud (Supabase-powered backend) for the project. This gives us a database, auth, and storage automatically.
+This is a **UI wireframe only** — no real payment processing. The flow simulates the payment experience.
 
-### Step 2: Create Database Tables
+### Flow
+```text
+[Join Game button] → [Payment Sheet slides up] → [Confirm & Pay] → [Success Screen with player list]
+```
 
-**profiles** table (auto-created on signup):
-- `id` (uuid, FK to auth.users)
-- `name`, `email`, `avatar_url`
-- `preferred_sports` (text array)
-- `skill_level` (text)
-- `area` (text)
-- `created_at`
+### Changes
 
-**games** table:
-- `id`, `sport`, `location`, `distance`, `date`, `time`
-- `current_players`, `max_players`, `host_id` (FK to profiles)
-- `description`, `level`, `created_at`
+**1. New component: `src/components/PaymentSheet.tsx`**
+A bottom sheet modal triggered when user taps "Join Game" on the Game Detail page. Contains:
+- Game summary (sport emoji, title, date, price placeholder e.g. "€5.00")
+- Payment method selector (radio-style cards):
+  - 💳 Credit/Debit Card (mock card input fields)
+  - Apple Pay
+  - Google Pay
+- "Confirm & Pay €5.00" gold button
+- Close/back button
 
-**game_participants** table:
-- `game_id` (FK to games), `user_id` (FK to profiles)
-- `joined_at`
+**2. New component: `src/components/PaymentConfirmation.tsx`**
+Shown after tapping "Confirm & Pay". Contains:
+- Green checkmark animation
+- "Payment confirmed! 🎉"
+- Game title, date, location
+- **Player list** — names of all participants already joined (fetched from `game_participants` + `profiles`)
+- "You're in!" badge
+- "View Game Chat" button → navigates to game detail
+- "Back to Home" button
 
-**bookings** table:
-- `court_name`, `sport`, `slot_time`, `date`
-- `user_id` (FK to profiles), `booked_at`
-
-All tables get Row-Level Security (RLS) policies so users can only modify their own data.
-
-### Step 3: Set Up Authentication
-- Replace the fake `login()` in `appContext` with real Supabase auth
-- Add `supabase.auth.signUp()`, `signInWithPassword()`, and `signInWithOAuth()` for Google/Apple
-- Add `onAuthStateChange` listener to track session state
-- Update `OnboardingPage.tsx` to use real auth calls
-- Update `Index.tsx` to check real session instead of local state
-
-### Step 4: Create Supabase Client
-- Add `src/integrations/supabase/client.ts` with project URL and anon key
-- Add typed database helpers
-
-### Step 5: Update App Logic
-- **appContext.tsx** — replace `useState` mock data with Supabase queries
-- **HomePage.tsx** — fetch games from database, real join/leave with `game_participants`
-- **CreateGamePage.tsx** — insert games into database
-- **BookPage.tsx** — save bookings to `bookings` table
-- **ProfilePage.tsx** — read/update profile from `profiles` table
-- **OnboardingPage.tsx** — real signup flow that creates profile on completion
-
-### Step 6: Auto-Create Profile on Signup
-Database trigger that automatically creates a `profiles` row when a new user signs up, using their name and email from auth metadata.
+**3. Modify `src/pages/GameDetailPage.tsx`**
+- Replace direct `handleJoin` call with opening the PaymentSheet
+- On payment "confirmation" (simulated), execute the existing join logic (insert into `game_participants`, update count)
+- Then show PaymentConfirmation overlay with the player list
 
 ### Technical Details
-- Uses Lovable Cloud (managed Supabase) — no external account needed
-- RLS policies ensure data security
-- Profile creation uses a database trigger (`handle_new_user` function)
-- Auth state managed via `onAuthStateChange` listener set up before `getSession()`
-- All existing UI/styling preserved — only the data layer changes
+- No real Stripe/payment integration — purely UI wireframe
+- Reuses existing join logic (`game_participants` insert + `games` update)
+- Player list in confirmation pulled from existing `participants` state
+- Both components use the app's dark theme with gold (#d4a017) accents
+- Sheet uses fixed positioning with backdrop blur, matching the existing confirmation modal pattern in BookPage
 
