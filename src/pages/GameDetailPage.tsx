@@ -54,6 +54,8 @@ const GameDetailPage = () => {
   const [hostProfile, setHostProfile] = useState<any>(null);
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<L.Map | null>(null);
+  const [showPayment, setShowPayment] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
 
   useEffect(() => {
     const fetchAll = async () => {
