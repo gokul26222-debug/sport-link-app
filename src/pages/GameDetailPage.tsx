@@ -8,6 +8,8 @@ import { useState, useEffect, useRef } from "react";
 import { format } from "date-fns";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import PaymentSheet from "@/components/PaymentSheet";
+import PaymentConfirmation from "@/components/PaymentConfirmation";
 
 const sportConfig: Record<string, { emoji: string; bg: string }> = {
   Football: { emoji: "⚽", bg: "bg-green-900/60" },
