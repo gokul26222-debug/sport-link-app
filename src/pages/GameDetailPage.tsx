@@ -322,6 +322,18 @@ const GameDetailPage = () => {
           )}
         </div>
       </div>
+      <PaymentSheet
+        open={showPayment}
+        onClose={() => setShowPayment(false)}
+        onConfirm={handlePaymentConfirm}
+        game={game}
+      />
+      <PaymentConfirmation
+        open={showConfirmation}
+        game={game}
+        participants={participants}
+        onClose={() => setShowConfirmation(false)}
+      />
     </div>
   );
 };
