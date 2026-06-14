@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SportLink - User Journey Map</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0f;
+            color: #fff;
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+        h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #6C5CE7, #d4a017);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 60px;
+            font-size: 1.1rem;
+        }
+        .journey-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .phase {
+            margin-bottom: 60px;
+            position: relative;
+        }
+        .phase-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .phase-number {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+        .phase-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+        }
+        .phase-desc {
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+        .steps {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            padding: 20px 0;
+            padding-left: 64px;
+        }
+        .step {
+            min-width: 200px;
+            max-width: 220px;
+            background: #1a1a2e;
+            border-radius: 16px;
+            padding: 20px;
+            position: relative;
+            border: 1px solid #2a2a3e;
+            flex-shrink: 0;
+        }
+        .step::after {
+            content: '→';
+            position: absolute;
+            right: -18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #555;
+            font-size: 1.5rem;
+        }
+        .step:last-child::after { display: none; }
+        .step-icon {
+            font-size: 2rem;
+            margin-bottom: 12px;
+        }
+        .step-title {
+            font-weight: 600;
+            margin-bottom: 6px;
+            font-size: 0.95rem;
+        }
+        .step-detail {
+            color: #888;
+            font-size: 0.8rem;
+            line-height: 1.4;
+        }
+        .step-status {
+            margin-top: 10px;
+            font-size: 0.7rem;
+            padding: 3px 8px;
+            border-radius: 20px;
+            display: inline-block;
+            font-weight: 600;
+        }
+        .status-exists { background: #00b89433; color: #00b894; }
+        .status-new { background: #6C5CE733; color: #a29bfe; }
+        .status-rebuild { background: #d4a01733; color: #d4a017; }
+        .status-missing { background: #e1725633; color: #e17256; }
+
+        /* Phase colors */
+        .phase-1 .phase-number { background: #6C5CE7; }
+        .phase-2 .phase-number { background: #00b894; }
+        .phase-3 .phase-number { background: #d4a017; }
+        .phase-4 .phase-number { background: #e17256; }
+        .phase-5 .phase-number { background: #0984e3; }
+        .phase-6 .phase-number { background: #fd79a8; }
+
+        .connector {
+            width: 3px;
+            height: 40px;
+            background: linear-gradient(to bottom, #6C5CE7, #d4a017);
+            margin-left: 87px;
+            border-radius: 2px;
+        }
+
+        .legend {
+            display: flex;
+            gap: 24px;
+            justify-content: center;
+            margin-bottom: 50px;
+            flex-wrap: wrap;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+        }
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .touchpoints {
+            max-width: 1400px;
+            margin: 60px auto 0;
+            background: #1a1a2e;
+            border-radius: 20px;
+            padding: 40px;
+            border: 1px solid #2a2a3e;
+        }
+        .touchpoints h2 {
+            font-size: 1.5rem;
+            margin-bottom: 24px;
+            color: #d4a017;
+        }
+        .tp-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        .tp-card {
+            background: #0a0a0f;
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #2a2a3e;
+        }
+        .tp-card h3 {
+            font-size: 1rem;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .tp-card p {
+            color: #888;
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <h1>SportLink User Journey</h1>
+    <p class="subtitle">Complete user flow — from first open to power user</p>
+
+    <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#00b894"></div> Exists in app</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#a29bfe"></div> New (to build)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#d4a017"></div> Needs rebuild</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#e17256"></div> Missing / Critical gap</div>
+    </div>
+
+    <div class="journey-container">
+
+        <!-- Phase 1: Discovery & Onboarding -->
+        <div class="phase phase-1">
+            <div class="phase-header">
+                <div class="phase-number">1</div>
+                <div>
+                    <div class="phase-title">Discovery & Onboarding</div>
+                    <div class="phase-desc">First impression → Account creation → Setup</div>
+                </div>
+            </div>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-icon">📱</div>
+                    <div class="step-title">App Open / Splash</div>
+                    <div class="step-detail">Brand logo animation, value prop in 3 words</div>
+                    <span class="step-status status-missing">Missing</span>
+                </div>
+                <div class="step">
+                    <div class="step-icon">👋</div>
+                    <div class="step-title">Welcome Carousel</div>
+                    <div class="step-detail">3 slides: Find Games, Meet Players, Book Courts</div>
+                    <span class="step-status status-missing">Missing</span>
+                </div>
+                <div class="step">
+                    <div class="step-icon">🔐</div>
+                    <div class="step-title">Sign Up / Login</div>
+                    <div class="step-detail">Email, Google, Apple OAuth</div>
+                    <span class="step-status status-exists">Exists</span>
+                </div>
+                <div class="step">
+                    <div class="step-icon">⚽</div>
+                    <div class="step-title">Select Sports</div>
+                    <div class="step-detail">Pick favorite sports & skill level</div>
+                    <span class="step-status status-exists">Exists</span>
+                </div>
+                <div class="step">
+                    <div class="step-icon">📍</div>
+                    <div class="step-title">Location Permission</div>
+                    <div class="step-detail">Enable GPS for nearby games</div>
+                    <span class="step-status status-missing">Missing</span>
+                </div>
+                <div class="step">
+                    <div class="step-icon">🔔</div>
+                    <div class="step-title">Notification Opt-in</div>
+                    <div class="step-detail">Push notif permission request</div>
+                    <span class="step-status status-missing">Missing</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="connector"></div>
+
+        <!-- Phase 2: Home & Discovery -->
+        <div class="phase phase-2">
+            <div class="phase-header">
+                <div class="phase-number">2</div>
+                <div>
+                    <div class="phase-title">Home Feed & Discovery</div>
+                    <div class="phase-desc">Browse games → Live scores → Explore</div>
+                </div>
+            </div>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-icon">🏟️</div>
+                    <div class="step-title">Live Scores Bar</div>
+                    <div class="step-detail">FIFA/EPL scores carousel at top, tap to expand</div>
+                    <span class="step-status status-new">New</span>
+                </div>
+                <div class="step">
+                    <div class="step-icon">🔴</div>
+                    <div class="step-title">Live Games Nearby</div>
+                    <div class="step-detail">Stories-style bubbles, games starting in &lt;2hrs</div>
+                    <span class="step-status status-new">New</span>
+                </div>
+                <div class="step">
+                    <div class="step-icon">🎯</div>
+                    <div class="step-title">Game Feed</div>
+                    <div class="step-detail">Cards with sport, location, time, spots left</div>
+                    <span class="step-status status-exists">Exists</span>
+                </div>
+                <div class="step">
+                    <div class="step-icon">🔍</div>
+                    <div class="step-title">Filter & Search</div>
+                    <div class="step-detail">By sport, distance, time, skill level</div>
+                    <span class="step-status status-rebuild">Rebuild</span>
+                </div>
+                <div class="step">
+                    <div class="step-icon">➕</div>
+                    <div class="step-title">Create Game (FAB)</div>
+                    <div class="step-detail">Floating button → Create game flow</div>
+                    <span class="step-status status-missing">Critical Gap</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="connector"></div>
+
+        <!-- Phase 3: Game Flow -->
+        <div class="phase phase-3">
+            <div class="phase-header">
+                <div class="phase-number">3</div>
+                <div>
+                    <div class="phase-title">Game Lifecycle</div>
+                    <div class="phase-desc">Create → Join → Play → Review</div>
+                </div>
+            </div>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-icon">🎮</div>
+                    <div class="step-title">Create Game</div>
+                    <div class="step-detail">Sport → Location → Date/Time → Price → Max Players → Publish</div>
+                    <span class="step-status status-missing">Critical Gap</span>
+                </div>
+                <div class="step">
+                    <div class="step-icon">✋</div>
+                    <div class="step-title">Join Game</div>
+                    <div class="step-detail">Tap join → Payment → Confirmed</div>
+                    <span class="step-status status-exists">Exists</span>
+                </div>
+                <div class="step">
+                    <div class="step-icon">💬</div>
+                    <div class="step-title">Game Chat</div>
+                    <div class="step-detail">Pre-game coordination with participants</div>
+                    <span class="step-status status-exists">Exists</span>
+                </div>
+                <div class="step">
+                    <div class="step-icon">📍</div>
+                    <div class="step-title">Check-in</div>
+                    <div class="step-detail">QR scan or GPS verify at venue</div>
+                    <span class="step-status status-new">New</span>
+                </div>
+                <div class="step">
+                    <div class="step-icon">⭐</div>
+                    <div class="step-title">Post-Game Review</div>
+                    <div class="step-detail">Rate players, rate venue, upload highlights</div>
+                    <span class="step-status status-new">New</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="connector"></div>
+
+        <!-- Phase 4: Social & Match -->
+        <div class="phase phase-4">
+            <div class="phase-header">
+                <div class="phase-number">4</div>
+                <div>
+                    <div class="phase-title">Social & Player Matching</div>
+                    <div class="phase-desc">Find players → Connect → Build squad</div>
+                </div>
+            </div>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-icon">👥</div>
+                    <div class="step-title">Player Discovery</div>
+                    <div class="step-detail">Browse players by sport, skill, area</div>
+                    <span class="step-status status-rebuild">Rebuild</span>
+                </div>
+                <div class="step">
+                    <div class="step-icon">🤝</div>
+                    <div class="step-title">Connect / Follow</div>
+                    <div class="step-detail">Send connect request, follow for updates</div>
+                    <span class="step-status status-missing">Missing</span>
+                </div>
+                <div class="step">
+                    <div class="step-icon">💬</div>
+                    <div class="step-title">Direct Messages</div>
+                    <div class="step-detail">1:1 chat after connection</div>
+                    <span class="step-status status-missing">Missing</span>
+                </div>
+                <div class="step">
+                    <div class="step-icon">🏆</div>
+                    <div class="step-title">Squad / Team</div>
+                    <div class="step-detail">Create group of regulars, shared calendar</div>
+                    <span class="step-status status-new">New</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="connector"></div>
+
+        <!-- Phase 5: Booking -->
+        <div class="phase phase-5">
+            <div class="phase-header">
+                <div class="phase-number">5</div>
+                <div>
+                    <div class="phase-title">Venue & Booking</div>
+                    <div class="phase-desc">Find courts → Book → Pay → Confirm</div>
+                </div>
+            </div>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-icon">🗺️</div>
+                    <div class="step-title">Map View</div>
+                    <div class="step-detail">Nearby venues on map with availability dots</div>
+                    <span class="step-status status-new">New</span>
+                </div>
+                <div class="step">
+                    <div class="step-icon">📅</div>
+                    <div class="step-title">Pick Slot</div>
+                    <div class="step-detail">Date → Available time slots → Select</div>
+                    <span class="step-status status-exists">Exists</span>
+                </div>
+                <div class="step">
+                    <div class="step-icon">💳</div>
+                    <div class="step-title">Payment</div>
+                    <div class="step-detail">Stripe checkout → Confirmation</div>
+                    <span class="step-status status-rebuild">Rebuild</span>
+                </div>
+                <div class="step">
+                    <div class="step-icon">📋</div>
+                    <div class="step-title">My Bookings</div>
+                    <div class="step-detail">Upcoming & past bookings, cancel option</div>
+                    <span class="step-status status-missing">Missing</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="connector"></div>
+
+        <!-- Phase 6: Engagement & Retention -->
+        <div class="phase phase-6">
+            <div class="phase-header">
+                <div class="phase-number">6</div>
+                <div>
+                    <div class="phase-title">Engagement & Retention</div>
+                    <div class="phase-desc">Notifications → Gamification → Streaks</div>
+                </div>
+            </div>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-icon">🔔</div>
+                    <div class="step-title">Push Notifications</div>
+                    <div class="step-detail">Game reminders, score alerts, new invites</div>
+                    <span class="step-status status-missing">Critical Gap</span>
+                </div>
+                <div class="step">
+                    <div class="step-icon">🔥</div>
+                    <div class="step-title">Streaks & Activity</div>
+                    <div class="step-detail">"Played 5 games this week" — keep the streak</div>
+                    <span class="step-status status-new">New</span>
+                </div>
+                <div class="step">
+                    <div class="step-icon">🏅</div>
+                    <div class="step-title">Badges & XP</div>
+                    <div class="step-detail">Unlock achievements, level up profile</div>
+                    <span class="step-status status-new">New</span>
+                </div>
+                <div class="step">
+                    <div class="step-icon">📊</div>
+                    <div class="step-title">Leaderboard</div>
+                    <div class="step-detail">Weekly/monthly rankings by area & sport</div>
+                    <span class="step-status status-exists">Exists</span>
+                </div>
+                <div class="step">
+                    <div class="step-icon">👤</div>
+                    <div class="step-title">Rich Profile</div>
+                    <div class="step-detail">Stats, badges, game history, highlights</div>
+                    <span class="step-status status-rebuild">Rebuild</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Notification Touchpoints -->
+    <div class="touchpoints">
+        <h2>🔔 Notification Touchpoints (Push + In-App)</h2>
+        <div class="tp-grid">
+            <div class="tp-card">
+                <h3>⚽ Live Score Alerts</h3>
+                <p>"GOAL! Argentina 2-1 France (78')" — Real-time FIFA/EPL score updates for followed teams</p>
+            </div>
+            <div class="tp-card">
+                <h3>🎮 Game Reminders</h3>
+                <p>"Your football game starts in 1 hour at Green Park" — with directions link</p>
+            </div>
+            <div class="tp-card">
+                <h3>👥 New Join Alert (Host)</h3>
+                <p>"Rahul joined your game! 6/10 spots filled" — progress toward full game</p>
+            </div>
+            <div class="tp-card">
+                <h3>🤝 Match Notification</h3>
+                <p>"You and Priya both play Badminton at Advanced level — Connect?" </p>
+            </div>
+            <div class="tp-card">
+                <h3>🔥 Streak Reminder</h3>
+                <p>"Don't break your 5-game streak! Join a game today." — evening nudge</p>
+            </div>
+            <div class="tp-card">
+                <h3>📅 Booking Confirmation</h3>
+                <p>"Court 3 booked for Sunday 5PM. Share with your squad?" — with share link</p>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
