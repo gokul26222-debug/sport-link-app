@@ -33,10 +33,10 @@ const Index = () => {
     );
   }
 
-  // Show home feed for both logged-in AND guest users.
-  // Guests can browse games, map, leaderboard — they hit a sign-in
-  // prompt only when they try to join a game or create one.
-  return isLoggedIn ? <HomePage /> : <OnboardingPage />;
+  // Show home feed to all users (logged-in and guests).
+  // Guests can browse all games, map, leaderboard without signing in.
+  // Sign-in prompt appears only when they try to join/create.
+  return <HomePage />;
 };
 
 export default Index;
