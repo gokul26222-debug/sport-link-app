@@ -139,7 +139,12 @@ const GameDetailPage = () => {
   }, [messages]);
 
   const handleJoin = () => {
-    if (!user || !game) return;
+    if (!game) return;
+    if (!user) {
+      toast("Sign in to join this game 👋");
+      navigate("/");
+      return;
+    }
     setShowPayment(true);
   };
 
