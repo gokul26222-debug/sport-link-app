@@ -71,14 +71,26 @@ const BookPage = () => {
 
   useEffect(() => {
     const fetchCourts = async () => {
+      const cached = localStorage.getItem("courts_cache");
+      if (cached) {
+        const { data, time } = JSON.parse(cached);
+        if (Date.now() - time < 3600000) { // 1 hour cache
+          setCourts(data);
+          setLoading(false);
+          return;
+        }
+      }
+
       try {
         const response = await fetch(
-          `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(OVERPASS_QUERY)}`
+          `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(OVERPASS_QUERY)}`,
+          { signal: AbortSignal.timeout(10000) }
         );
         const data = await response.json();
 
         const parsed: Court[] = (data.elements || [])
           .filter((el: any) => el.lat != null || el.center != null)
+          .slice(0, 20)
           .map((el: any) => {
             const lat = el.lat ?? el.center?.lat;
             const lon = el.lon ?? el.center?.lon;
@@ -96,8 +108,13 @@ const BookPage = () => {
             };
           });
 
+        localStorage.setItem("courts_cache", JSON.stringify({ data: parsed, time: Date.now() }));
         setCourts(parsed);
-      } catch {
+      } catch (err) {
+        const cached = localStorage.getItem("courts_cache");
+        if (cached) {
+          setCourts(JSON.parse(cached).data);
+        }
         toast.error("Couldn't load venues");
       } finally {
         setLoading(false);
