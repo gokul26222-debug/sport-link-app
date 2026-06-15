@@ -135,7 +135,12 @@ const HomePage = () => {
 
   const handleJoin = async (e: React.MouseEvent, gameId: string) => {
     e.stopPropagation();
-    if (!user) return;
+    if (!user) {
+      toast("Sign in to join games 👋", {
+        action: { label: "Sign in", onClick: () => navigate("/") },
+      });
+      return;
+    }
     setLoadingJoin(gameId);
     const { error } = await supabase
       .from("game_participants")
@@ -411,7 +416,7 @@ const HomePage = () => {
 
       {/* FAB */}
       <button
-        onClick={() => navigate("/create-game")}
+        onClick={() => user ? navigate("/create-game") : toast("Sign in to create a game 👋", { action: { label: "Sign in", onClick: () => navigate("/") } })}
         className="fixed bottom-20 right-5 z-40 w-14 h-14 rounded-full bg-[#d4a017] text-black text-2xl font-bold flex items-center justify-center shadow-lg shadow-[#d4a017]/30 active:scale-95 transition-all"
         aria-label="Create game"
       >

@@ -85,23 +85,39 @@ const OnboardingPage = () => {
         }
         const { error } = await signUp(email.trim(), password.trim(), name.trim());
         if (error) {
-          toast.error(error.message);
+          // "User already registered" → guide them to log in
+          if (error.message?.toLowerCase().includes("already registered") ||
+              error.message?.toLowerCase().includes("already exists")) {
+            toast.error("Account already exists — try logging in instead");
+            setIsSignUp(false);
+          } else {
+            toast.error(error.message || "Sign up failed");
+          }
           setLoading(null);
           return;
         }
-        toast.success("Account created! Setting up your profile...");
+        // Account created — profile was created in signUp()
+        // Even if email confirmation is required, we move to profile setup.
+        // The user will be able to log in after confirming their email.
+        toast.success("Account created! Check your email to confirm ✉️");
         setScreen(3);
       } else {
         const { error } = await signIn(email.trim(), password.trim());
         if (error) {
-          toast.error(error.message);
+          if (error.message?.toLowerCase().includes("email not confirmed")) {
+            toast.error("Please confirm your email first — check your inbox");
+          } else if (error.message?.toLowerCase().includes("invalid login")) {
+            toast.error("Wrong email or password");
+          } else {
+            toast.error(error.message || "Login failed");
+          }
           setLoading(null);
           return;
         }
-        // signIn triggers onAuthStateChange which sets isLoggedIn → redirects to Home
+        // onAuthStateChange fires → isLoggedIn becomes true → Index renders HomePage
       }
     } catch {
-      toast.error("Something went wrong");
+      toast.error("Something went wrong. Please try again.");
     }
     setLoading(null);
   };
