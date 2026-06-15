@@ -249,8 +249,29 @@ const HomePage = () => {
         )}
       </div>
 
+      {/* Quick links */}
+      <div className="mt-5 px-5">
+        <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-none">
+          {[
+            { label: "My Games", emoji: "🎮", path: "/my-games" },
+            { label: "Crews", emoji: "👥", path: "/crews" },
+            { label: "Events", emoji: "🎪", path: "/events" },
+            { label: "Book Court", emoji: "🏟️", path: "/book" },
+          ].map((link) => (
+            <button
+              key={link.path}
+              onClick={() => navigate(link.path)}
+              className="shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-[#13131A] border border-[#2a2a3a] hover:border-[#d4a017]/30 transition-all active:scale-95"
+            >
+              <span className="text-base">{link.emoji}</span>
+              <span className="text-xs font-medium text-gray-300">{link.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Filter chips */}
-      <div className="mt-5">
+      <div className="mt-4">
         <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none px-5">
           {filters.map((f) => (
             <button

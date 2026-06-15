@@ -1,11 +1,19 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { BottomNav } from "@/components/BottomNav";
+import { toast } from "sonner";
+import { MapPin, Search, Clock, Star } from "lucide-react";
 
-const mockCourts = [
-  { name: "Stade Bertrand Dauvin", zone: "18e Arrondissement", sports: "Football, Rugby", price: "€12/hr", slots: ["10:00", "14:00", "18:00"] },
-  { name: "Court Municipal Roquette", zone: "11e Arrondissement", sports: "Tennis, Padel", price: "€18/hr", slots: ["09:00", "11:00", "20:00"] },
-  { name: "Gymnase République", zone: "10e Arrondissement", sports: "Basketball, Volleyball", price: "€8/hr", slots: ["12:00", "17:00", "19:30"] },
-];
+interface Court {
+  id: number;
+  name: string;
+  sport: string;
+  zone: string;
+  lat: number;
+  lon: number;
+  price: string;
+  slots: string[];
+}
 
 const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -14,129 +22,296 @@ function getNext9Days() {
   return Array.from({ length: 9 }, (_, i) => {
     const d = new Date(today);
     d.setDate(today.getDate() + i);
-    return { date: d.getDate(), day: dayNames[d.getDay()], isToday: i === 0, key: i };
+    return { date: d.getDate(), day: dayNames[d.getDay()], isToday: i === 0, key: i, full: d.toISOString().split("T")[0] };
   });
 }
 
+const sportEmojis: Record<string, string> = {
+  soccer: "⚽", football: "⚽", tennis: "🎾", basketball: "🏀",
+  padel: "🏓", volleyball: "🏐", running: "🏃", fitness: "💪",
+  swimming: "🏊", multi: "🏟️",
+};
+
+const sportFilters = ["All", "Football", "Tennis", "Basketball", "Padel"];
+
+const OVERPASS_QUERY = `[out:json][timeout:20];(node["leisure"="sports_centre"](48.82,2.25,48.90,2.42);way["leisure"="pitch"](48.82,2.25,48.90,2.42););out center 60;`;
+
+const defaultSlots = ["09:00", "10:00", "11:00", "14:00", "15:00", "17:00", "18:00", "19:00", "20:00"];
+
+function getRandomSlots(): string[] {
+  const count = 3 + Math.floor(Math.random() * 4);
+  const shuffled = [...defaultSlots].sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, count).sort();
+}
+
+function getRandomPrice(): string {
+  const prices = ["Free", "€5/hr", "€8/hr", "€10/hr", "€12/hr", "€15/hr"];
+  return prices[Math.floor(Math.random() * prices.length)];
+}
+
+function getSportFromTags(tags: Record<string, string>): string {
+  const sport = (tags.sport || "").toLowerCase();
+  if (sport.includes("football") || sport.includes("soccer")) return "football";
+  if (sport.includes("tennis")) return "tennis";
+  if (sport.includes("basketball")) return "basketball";
+  if (sport.includes("padel")) return "padel";
+  return sport || "multi";
+}
+
 const BookPage = () => {
+  const navigate = useNavigate();
   const dates = useMemo(() => getNext9Days(), []);
   const [activeDate, setActiveDate] = useState(0);
-  const [showConfirmation, setShowConfirmation] = useState(false);
-  const [bookedCourt, setBookedCourt] = useState<typeof mockCourts[0] | null>(null);
-  const [bookedSlot, setBookedSlot] = useState<string | null>(null);
-  const [selectedSlot, setSelectedSlot] = useState<Record<string, string>>({});
+  const [courts, setCourts] = useState<Court[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [activeSport, setActiveSport] = useState("All");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedSlots, setSelectedSlots] = useState<Record<number, string>>({});
+  const [showConfirm, setShowConfirm] = useState<Court | null>(null);
+
+  useEffect(() => {
+    const fetchCourts = async () => {
+      try {
+        const response = await fetch(
+          `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(OVERPASS_QUERY)}`
+        );
+        const data = await response.json();
+
+        const parsed: Court[] = (data.elements || [])
+          .filter((el: any) => el.lat != null || el.center != null)
+          .map((el: any) => {
+            const lat = el.lat ?? el.center?.lat;
+            const lon = el.lon ?? el.center?.lon;
+            const tags = el.tags || {};
+            const sport = getSportFromTags(tags);
+            return {
+              id: el.id,
+              name: tags.name || "Sports Facility",
+              sport,
+              zone: tags["addr:city"] || tags["addr:district"] || "Paris",
+              lat,
+              lon,
+              price: getRandomPrice(),
+              slots: getRandomSlots(),
+            };
+          });
+
+        setCourts(parsed);
+      } catch {
+        toast.error("Couldn't load venues");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCourts();
+  }, []);
+
+  const filtered = courts
+    .filter((c) => {
+      if (activeSport !== "All") {
+        const filterKey = activeSport.toLowerCase();
+        if (filterKey === "football") return c.sport === "football" || c.sport === "soccer";
+        return c.sport === filterKey;
+      }
+      return true;
+    })
+    .filter((c) => {
+      if (!searchQuery.trim()) return true;
+      const q = searchQuery.toLowerCase();
+      return c.name.toLowerCase().includes(q) || c.sport.includes(q) || c.zone.toLowerCase().includes(q);
+    });
+
+  const handleBook = (court: Court) => {
+    const slot = selectedSlots[court.id] || court.slots[0];
+    setShowConfirm(court);
+  };
 
   return (
-    <div className="min-h-screen bg-background pb-24">
-      <div className="px-5 pt-6 pb-2">
-        <h1 className="text-2xl font-bold text-foreground">Book a court</h1>
+    <div className="min-h-screen bg-[#0A0A0F] pb-24">
+      {/* Header */}
+      <div className="px-5 pt-8 pb-2 flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-white">Book a Court</h1>
+          <p className="text-sm text-gray-500 mt-0.5">Real venues in Paris</p>
+        </div>
+        <button
+          onClick={() => navigate("/map")}
+          className="w-10 h-10 rounded-full bg-[#13131A] border border-[#2a2a3a] flex items-center justify-center"
+        >
+          <MapPin className="w-4 h-4 text-[#d4a017]" />
+        </button>
       </div>
 
-      <div className="px-5 mt-4 overflow-x-auto scrollbar-hide">
-        <div className="flex gap-2">
+      {/* Search */}
+      <div className="px-5 mt-4">
+        <div className="relative">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600" />
+          <input
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search venues..."
+            className="w-full h-11 rounded-2xl bg-[#13131A] border border-[#2a2a3a] pl-10 pr-4 text-white text-sm placeholder:text-gray-600 outline-none focus:border-[#6C5CE7] transition-colors"
+          />
+        </div>
+      </div>
+
+      {/* Sport filter */}
+      <div className="px-5 mt-3 mb-1">
+        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+          {sportFilters.map((s) => (
+            <button
+              key={s}
+              onClick={() => setActiveSport(s)}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
+                activeSport === s ? "bg-[#d4a017] text-black" : "bg-transparent text-gray-500 border border-[#2a2a3a]"
+              }`}
+            >
+              {s}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Date picker */}
+      <div className="px-5 mt-3">
+        <div className="flex gap-2 overflow-x-auto scrollbar-none pb-1">
           {dates.map((d) => (
             <button
               key={d.key}
               onClick={() => setActiveDate(d.key)}
-              className="flex flex-col items-center justify-center flex-shrink-0 transition-all"
+              className="flex flex-col items-center justify-center shrink-0 transition-all"
               style={{
-                width: 40,
-                height: 52,
-                borderRadius: 12,
-                background: activeDate === d.key ? "#6C5CE7" : "#13131A",
-                border: activeDate === d.key ? "none" : "0.5px solid #2a2a3a",
+                width: 44,
+                height: 56,
+                borderRadius: 14,
+                background: activeDate === d.key ? "#d4a017" : "#13131A",
+                border: activeDate === d.key ? "none" : "1px solid #2a2a3a",
               }}
             >
-              <span className="text-sm font-semibold" style={{ color: activeDate === d.key ? "#fff" : "#888" }}>
+              <span className="text-sm font-bold" style={{ color: activeDate === d.key ? "#000" : "#aaa" }}>
                 {d.date}
               </span>
-              <span className="text-[10px]" style={{ color: activeDate === d.key ? "rgba(255,255,255,0.7)" : "#888" }}>
+              <span className="text-[10px] font-medium" style={{ color: activeDate === d.key ? "rgba(0,0,0,0.6)" : "#666" }}>
                 {d.day}
               </span>
               {d.isToday && (
-                <span className="block w-1.5 h-1.5 rounded-full mt-0.5" style={{ background: "#00b894" }} />
+                <span className="block w-1.5 h-1.5 rounded-full mt-0.5" style={{ background: activeDate === d.key ? "#000" : "#00b894" }} />
               )}
             </button>
           ))}
         </div>
       </div>
 
+      {/* Courts */}
       <div className="px-5 mt-5 space-y-3">
-        {mockCourts.map((court, i) => (
-          <div key={i} className="bg-card rounded-2xl border border-border p-5">
-            <h3 className="font-semibold text-foreground">{court.name}</h3>
-            <p className="text-xs text-muted-foreground mt-1">{court.zone} • {court.sports}</p>
+        <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-widest">
+          {loading ? "Loading venues..." : `${filtered.length} venues available`}
+        </p>
 
-            <div className="flex gap-2 mt-3 flex-wrap">
-              {court.slots.map((slot) => (
-                <button
-                  key={slot}
-                  onClick={() => setSelectedSlot(prev => ({ ...prev, [court.name]: slot }))}
-                  className="text-xs font-medium px-3 py-1.5 rounded-lg cursor-pointer transition-colors"
-                  style={{
-                    background: selectedSlot[court.name] === slot ? "#6C5CE7" : "#1a1a2e",
-                    color: selectedSlot[court.name] === slot ? "white" : "#a29bfe",
-                  }}
-                >
-                  {slot}
-                </button>
-              ))}
+        {loading ? (
+          Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="bg-[#13131A] rounded-2xl border border-[#2a2a3a] p-5 animate-pulse">
+              <div className="flex gap-3">
+                <div className="w-12 h-12 rounded-xl bg-[#2a2a3a]" />
+                <div className="flex-1 space-y-2">
+                  <div className="h-4 bg-[#2a2a3a] rounded w-3/4" />
+                  <div className="h-3 bg-[#2a2a3a] rounded w-1/2" />
+                </div>
+              </div>
             </div>
-
-            <div className="flex items-center justify-between mt-4">
-              <span className="text-sm font-bold text-success">{court.price}</span>
-              <button
-                onClick={() => {
-                  setBookedCourt(court);
-                  setBookedSlot(selectedSlot[court.name] || court.slots[0]);
-                  setShowConfirmation(true);
-                }}
-                className="bg-primary text-primary-foreground text-sm font-semibold px-5 py-2 rounded-full cursor-pointer"
-              >
-                Book now
-              </button>
-            </div>
+          ))
+        ) : filtered.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-3xl mb-2">🔍</p>
+            <p className="text-gray-500 text-sm">No venues found</p>
           </div>
-        ))}
+        ) : (
+          filtered.map((court) => {
+            const emoji = sportEmojis[court.sport] || "🏟️";
+
+            return (
+              <div key={court.id} className="bg-[#13131A] rounded-2xl border border-[#2a2a3a] p-5">
+                <div className="flex items-start gap-3 mb-3">
+                  <div className="w-12 h-12 rounded-xl bg-[#1a1a2e] flex items-center justify-center text-2xl shrink-0">
+                    {emoji}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-white text-sm truncate">{court.name}</p>
+                    <p className="text-xs text-gray-500 mt-0.5">{court.zone} · {court.sport}</p>
+                  </div>
+                  <span className="text-sm font-bold text-[#00b894] shrink-0">{court.price}</span>
+                </div>
+
+                {/* Time slots */}
+                <div className="flex gap-2 flex-wrap mb-4">
+                  {court.slots.map((slot) => (
+                    <button
+                      key={slot}
+                      onClick={() => setSelectedSlots(prev => ({ ...prev, [court.id]: slot }))}
+                      className="flex items-center gap-1 text-xs font-medium px-3 py-1.5 rounded-lg transition-all"
+                      style={{
+                        background: selectedSlots[court.id] === slot ? "#d4a017" : "#1a1a2e",
+                        color: selectedSlots[court.id] === slot ? "#000" : "#888",
+                        border: selectedSlots[court.id] === slot ? "none" : "1px solid #2a2a3a",
+                      }}
+                    >
+                      <Clock className="w-3 h-3" />
+                      {slot}
+                    </button>
+                  ))}
+                </div>
+
+                <button
+                  onClick={() => handleBook(court)}
+                  className="w-full py-2.5 rounded-xl bg-[#d4a017] text-black text-sm font-bold transition-all active:scale-[0.98]"
+                >
+                  Book Now
+                </button>
+              </div>
+            );
+          })
+        )}
       </div>
 
-      {showConfirmation && (
-        <div
-          onClick={() => setShowConfirmation(false)}
-          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}
-        >
+      {/* Confirmation modal */}
+      {showConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-5" onClick={() => setShowConfirm(null)}>
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" />
           <div
+            className="relative w-full max-w-sm bg-[#13131A] rounded-3xl border border-[#d4a017]/30 p-7 text-center animate-[bounceIn_0.4s_ease-out]"
             onClick={(e) => e.stopPropagation()}
-            style={{ background: '#13131A', borderRadius: '24px', padding: '28px 24px', border: '1px solid #6C5CE7', boxShadow: '0 0 40px rgba(108,92,231,0.5)', width: '100%', maxWidth: '300px', textAlign: 'center', animation: 'bounceIn 0.4s ease' }}
           >
-            <div style={{ width: 56, height: 56, borderRadius: '50%', background: '#00b894', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', animation: 'pulse 1.5s infinite', fontSize: 24, color: 'white', fontWeight: 700 }}>
-              ✓
+            <div className="w-16 h-16 rounded-full bg-[#00b894]/20 flex items-center justify-center mx-auto mb-4">
+              <span className="text-3xl">✓</span>
             </div>
 
-            <p style={{ color: 'white', fontSize: 18, fontWeight: 700, marginBottom: 4 }}>You're in! 🎉</p>
-            <p style={{ color: '#a29bfe', fontSize: 14, fontWeight: 600 }}>{bookedCourt?.name}</p>
-            <p style={{ color: '#888', fontSize: 12, marginTop: 4 }}>{bookedSlot}</p>
-            <p style={{ color: '#888', fontSize: 12 }}>{bookedCourt?.zone}</p>
+            <p className="text-white text-lg font-bold mb-1">You're in! 🎉</p>
+            <p className="text-[#d4a017] text-sm font-semibold">{showConfirm.name}</p>
+            <p className="text-gray-500 text-xs mt-1">
+              {dates[activeDate]?.day} {dates[activeDate]?.date} · {selectedSlots[showConfirm.id] || showConfirm.slots[0]}
+            </p>
+            <p className="text-gray-500 text-xs">{showConfirm.zone}</p>
 
-            <div style={{ background: '#1a1a2e', borderRadius: 12, padding: '12px', marginTop: 16, marginBottom: 16 }}>
-              <p style={{ color: '#a29bfe', fontSize: 11, fontWeight: 600 }}>Split with teammates</p>
-              <p style={{ color: 'white', fontSize: 16, fontWeight: 700, marginTop: 4 }}>
-                Your share: €{bookedCourt ? (parseInt(bookedCourt.price.replace('€', '')) / 4).toFixed(2) : '0.00'}
+            <div className="bg-[#0A0A0F] rounded-xl p-4 mt-4 mb-4">
+              <p className="text-[#d4a017] text-xs font-semibold">Split with teammates</p>
+              <p className="text-white text-xl font-bold mt-1">
+                {showConfirm.price === "Free" ? "Free" : `Your share: ${showConfirm.price.replace("/hr", "")}`}
               </p>
-              <p style={{ color: '#888', fontSize: 11, marginTop: 2 }}>Total {bookedCourt?.price} ÷ 4 players</p>
+              <p className="text-gray-600 text-[10px] mt-0.5">÷ 4 players</p>
             </div>
 
             <button
-              onClick={() => setShowConfirmation(false)}
-              style={{ background: '#6C5CE7', color: 'white', border: 'none', borderRadius: 12, padding: 11, fontSize: 13, fontWeight: 500, cursor: 'pointer', width: '100%', marginBottom: 8 }}
+              onClick={() => { setShowConfirm(null); toast.success("Booking confirmed!"); }}
+              className="w-full py-3 rounded-xl bg-[#d4a017] text-black font-bold text-sm mb-2"
             >
-              View game chat 💬
+              View Game Chat 💬
             </button>
             <button
-              onClick={() => setShowConfirmation(false)}
-              style={{ background: 'transparent', color: '#6C5CE7', border: '1px solid #6C5CE7', borderRadius: 12, padding: 11, fontSize: 13, fontWeight: 500, cursor: 'pointer', width: '100%' }}
+              onClick={() => setShowConfirm(null)}
+              className="w-full py-3 rounded-xl border border-[#2a2a3a] text-gray-400 text-sm font-medium"
             >
-              Back to home
+              Back to Home
             </button>
           </div>
         </div>
