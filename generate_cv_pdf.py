@@ -40,6 +40,14 @@ pdf.set_font("Helvetica", "", 8)
 pdf.cell(0, 4, "Paris, France  |  gokul26222@gmail.com  |  +33 7 45 43 23 95  |  linkedin.com/in/gokulsrini", align="C", new_x="LMARGIN", new_y="NEXT")
 pdf.cell(0, 4, "Portfolio: portfolio-orcin-nu-xm2481apwv.vercel.app  |  Authorized to work in France, no sponsorship required", align="C", new_x="LMARGIN", new_y="NEXT")
 
+# QR code top-right
+qr_size = 22
+qr_x = pdf.w - pdf.r_margin - qr_size
+qr_y = 10
+pdf.image("/home/user/sport-link-app/portfolio_qr.png", x=qr_x, y=qr_y, w=qr_size, h=qr_size)
+pdf.set_font("Helvetica", "", 5.5)
+pdf.text(qr_x + 1.5, qr_y + qr_size + 3, "Scan for Portfolio")
+
 # Professional Experience
 pdf.section_title("PROFESSIONAL EXPERIENCE")
 
@@ -61,7 +69,7 @@ pdf.bullet("Translated 12 recurring client complaints into 3 shipped product fix
 pdf.bullet("Led UAT sessions and coordinated zero-regression releases, bridging client needs with engineering execution")
 
 # Projects
-pdf.section_title("PROJECTS (0 TO 1)")
+pdf.section_title("PROJECTS")
 
 pdf.set_font("Helvetica", "B", 8.5)
 pdf.cell(0, 4.5, "Cleo: AI guide for international students in France", new_x="LMARGIN", new_y="NEXT")
