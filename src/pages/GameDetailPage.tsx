@@ -11,6 +11,7 @@ import "leaflet/dist/leaflet.css";
 import PaymentSheet from "@/components/PaymentSheet";
 import PaymentConfirmation from "@/components/PaymentConfirmation";
 import MVPVote from "@/components/MVPVote";
+import { sampleGames } from "@/lib/sampleGames";
 
 const sportConfig: Record<string, { emoji: string; bg: string }> = {
   Football: { emoji: "⚽", bg: "bg-green-900/60" },
@@ -79,6 +80,15 @@ const GameDetailPage = () => {
   useEffect(() => {
     const fetchAll = async () => {
       if (!id) return;
+
+      // Sample/demo games are not in the DB — load from local sample data.
+      if (id.startsWith("sample-")) {
+        const sample = sampleGames.find((g) => g.id === id);
+        setGame(sample as never);
+        setLoading(false);
+        return;
+      }
+
       const { data: gameData } = await supabase.from("games").select("*").eq("id", id).maybeSingle();
       setGame(gameData);
 

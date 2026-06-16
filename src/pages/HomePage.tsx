@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { MapPin, Users, Clock } from "lucide-react";
+import { sampleGames } from "@/lib/sampleGames";
 
 interface GameRow {
   id: string;
@@ -116,7 +117,12 @@ const HomePage = () => {
       .select("*")
       .eq("status", "open")
       .order("scheduled_at", { ascending: true });
-    if (data) setGames(data);
+    if (data && data.length > 0) {
+      setGames(data);
+    } else {
+      // Fallback: show sample games so the feed is never empty.
+      setGames(sampleGames as unknown as GameRow[]);
+    }
     setLoading(false);
   };
 
