@@ -32,21 +32,23 @@ class CV(FPDF):
 
 pdf = CV()
 
-# Header
-pdf.set_font("Helvetica", "B", 16)
-pdf.cell(0, 8, "GOKUL SRINIVASAN", align="C", new_x="LMARGIN", new_y="NEXT")
-pdf.ln(0.5)
-pdf.set_font("Helvetica", "", 8)
-pdf.cell(0, 4, "Paris, France  |  gokul26222@gmail.com  |  +33 7 45 43 23 95  |  linkedin.com/in/gokulsrini", align="C", new_x="LMARGIN", new_y="NEXT")
-pdf.cell(0, 4, "Portfolio: portfolio-orcin-nu-xm2481apwv.vercel.app  |  Authorized to work in France, no sponsorship required", align="C", new_x="LMARGIN", new_y="NEXT")
-
-# QR code top-right
-qr_size = 22
+# QR code top-right (placed first so text avoids it)
+qr_size = 20
 qr_x = pdf.w - pdf.r_margin - qr_size
 qr_y = 10
 pdf.image("/home/user/sport-link-app/portfolio_qr.png", x=qr_x, y=qr_y, w=qr_size, h=qr_size)
 pdf.set_font("Helvetica", "", 5.5)
-pdf.text(qr_x + 1.5, qr_y + qr_size + 3, "Scan for Portfolio")
+pdf.text(qr_x + 2, qr_y + qr_size + 2.5, "Scan for Portfolio")
+
+# Header - keep text within left area so it doesn't overlap QR
+header_w = qr_x - pdf.l_margin - 2
+pdf.set_font("Helvetica", "B", 16)
+pdf.cell(header_w, 8, "GOKUL SRINIVASAN", align="C", new_x="LMARGIN", new_y="NEXT")
+pdf.ln(0.5)
+pdf.set_font("Helvetica", "", 8)
+pdf.cell(header_w, 4, "Paris, France  |  gokul26222@gmail.com  |  +33 7 45 43 23 95  |  linkedin.com/in/gokulsrini", align="C", new_x="LMARGIN", new_y="NEXT")
+pdf.cell(header_w, 4, "Portfolio: portfolio-orcin-nu-xm2481apwv.vercel.app  |  Authorized to work in France", align="C", new_x="LMARGIN", new_y="NEXT")
+pdf.cell(header_w, 4, "No sponsorship required", align="C", new_x="LMARGIN", new_y="NEXT")
 
 # Professional Experience
 pdf.section_title("PROFESSIONAL EXPERIENCE")
