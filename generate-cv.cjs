@@ -19,102 +19,76 @@ const C = {
   green: "7FE0A8",
 };
 
-const FONT = "Arial";
+const F = "Arial";
 const A4_W = 11906;
 const A4_H = 16838;
-const MARGIN = 360;
-const CONTENT_W = A4_W - 2 * MARGIN;
-const SIDE_W = Math.round(CONTENT_W * 0.30);
-const MAIN_W = CONTENT_W - SIDE_W;
+const M = 360;
+const CW = A4_W - 2 * M;
+const SW = Math.round(CW * 0.31);
+const MW = CW - SW;
 
-const noBorder = { style: BorderStyle.NONE, size: 0, color: "FFFFFF" };
-const noBorders = { top: noBorder, bottom: noBorder, left: noBorder, right: noBorder };
+const noB = { style: BorderStyle.NONE, size: 0, color: "FFFFFF" };
+const noBs = { top: noB, bottom: noB, left: noB, right: noB };
 
-function sideHead(text) {
+// ─── Helpers ───
+function p(runs, before = 0, after = 0, opts = {}) {
   return new Paragraph({
-    spacing: { before: 200, after: 80 },
-    children: [new TextRun({ text, bold: true, size: 19, font: FONT, color: C.accentDark, allCaps: true })],
+    spacing: { before, after, line: opts.line || 240 },
+    alignment: opts.align || AlignmentType.LEFT,
+    indent: opts.indent || undefined,
+    border: opts.border || undefined,
+    children: Array.isArray(runs) ? runs : [runs],
+  });
+}
+
+function t(text, size, color, bold = false, italic = false) {
+  return new TextRun({ text, font: F, size, color, bold, italics: italic });
+}
+
+function link(label, url, size, color) {
+  return new ExternalHyperlink({
+    link: url,
+    children: [new TextRun({ text: label, font: F, size, color, underline: { type: "single" } })],
+  });
+}
+
+function sHead(text) {
+  return p(t(text, 18, C.accentDark, true), 140, 50, {
     border: { bottom: { style: BorderStyle.SINGLE, size: 1, color: "3A5A80" } },
   });
 }
 
-function mainHead(text) {
-  return new Paragraph({
-    spacing: { before: 200, after: 80 },
-    children: [new TextRun({ text, bold: true, size: 21, font: FONT, color: C.accentLight, allCaps: true })],
+function mHead(text) {
+  return p(t(text, 19, C.accentLight, true), 120, 40, {
     border: { bottom: { style: BorderStyle.SINGLE, size: 1, color: C.accentLight } },
   });
 }
 
-function st(text, opts = {}) {
-  return new TextRun({
-    text, font: FONT, size: opts.size || 17, color: opts.color || C.sidebarText,
-    bold: opts.bold || false, italics: opts.italics || false,
-  });
-}
-
-function mt(text, opts = {}) {
-  return new TextRun({
-    text, font: FONT, size: opts.size || 17, color: opts.color || C.bodyText,
-    bold: opts.bold || false, italics: opts.italics || false,
-  });
-}
-
-function sp(runs, opts = {}) {
-  return new Paragraph({
-    spacing: { before: opts.before || 20, after: opts.after || 20 },
-    alignment: opts.align || AlignmentType.LEFT,
-    children: Array.isArray(runs) ? runs : [runs],
-  });
-}
-
-function mp(runs, opts = {}) {
-  return new Paragraph({
-    spacing: { before: opts.before || 20, after: opts.after || 20 },
-    alignment: opts.align || AlignmentType.LEFT,
-    children: Array.isArray(runs) ? runs : [runs],
-    indent: opts.indent || undefined,
-  });
-}
-
-function sideLink(label, url) {
-  return new ExternalHyperlink({
-    link: url,
-    children: [new TextRun({ text: label, font: FONT, size: 16, color: C.accentDark, underline: { type: "single" } })],
-  });
-}
-
-function mainLink(label, url) {
-  return new ExternalHyperlink({
-    link: url,
-    children: [new TextRun({ text: label, font: FONT, size: 16, color: C.accentLight, underline: { type: "single" } })],
-  });
-}
-
-function bullet(text, size = 16) {
-  return new Paragraph({
-    spacing: { before: 20, after: 20 },
-    indent: { left: 200, hanging: 200 },
-    children: [mt("•  ", { size }), mt(text, { size })],
+function bul(text) {
+  return p([t("• ", 16, C.bodyText), t(text, 16, C.bodyText)], 10, 10, {
+    indent: { left: 160, hanging: 160 }, line: 230,
   });
 }
 
 function badge(text) {
   return new TextRun({
-    text: ` ${text} `, font: FONT, size: 14, color: "FFFFFF", bold: true,
+    text: ` ${text} `, font: F, size: 13, color: "FFFFFF", bold: true,
     shading: { type: ShadingType.CLEAR, fill: C.accentLight, color: C.accentLight },
   });
 }
 
-// ═══ SIDEBAR ═══
-const side = [];
+// ═══════════════════════════════════
+// SIDEBAR
+// ═══════════════════════════════════
+const S = [];
 
-side.push(new Paragraph({ spacing: { before: 40, after: 0 }, children: [] }));
-side.push(new Table({
+// Photo placeholder — smaller
+S.push(p([], 20, 0));
+S.push(new Table({
   rows: [new TableRow({
-    height: { value: 1700, rule: "exact" },
+    height: { value: 1400, rule: "exact" },
     children: [new TableCell({
-      width: { size: SIDE_W - 500, type: WidthType.DXA },
+      width: { size: SW - 500, type: WidthType.DXA },
       verticalAlign: VerticalAlign.CENTER,
       shading: { type: ShadingType.CLEAR, fill: C.photoBg },
       borders: {
@@ -124,169 +98,154 @@ side.push(new Table({
         right: { style: BorderStyle.DASHED, size: 1, color: C.sidebarMuted },
       },
       children: [
-        new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: "ADD", bold: true, font: FONT, size: 20, color: C.sidebarMuted })] }),
-        new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: "PHOTO", bold: true, font: FONT, size: 20, color: C.sidebarMuted })] }),
+        new Paragraph({ alignment: AlignmentType.CENTER, spacing: { before: 0, after: 0 }, children: [t("ADD", 18, C.sidebarMuted, true)] }),
+        new Paragraph({ alignment: AlignmentType.CENTER, spacing: { before: 0, after: 0 }, children: [t("PHOTO", 18, C.sidebarMuted, true)] }),
       ],
     })],
   })],
-  width: { size: SIDE_W - 500, type: WidthType.DXA },
+  width: { size: SW - 500, type: WidthType.DXA },
   layout: TableLayoutType.FIXED,
 }));
 
-side.push(sp(st("GOKUL", { size: 30, bold: true, color: "FFFFFF" }), { before: 180, after: 0 }));
-side.push(sp(st("SRINIVASAN", { size: 30, bold: true, color: "FFFFFF" }), { before: 0, after: 30 }));
+// Name — tight
+S.push(p(t("GOKUL", 28, "FFFFFF", true), 120, 0));
+S.push(p(t("SRINIVASAN", 28, "FFFFFF", true), 0, 10));
 
-side.push(sp(st("PRODUCT MANAGER", { size: 16, color: C.accentDark, bold: true }), { before: 0, after: 0 }));
-side.push(sp(st("GROWTH · OPS", { size: 16, color: C.accentDark, bold: true }), { before: 0, after: 40 }));
+// Tagline
+S.push(p(t("PRODUCT MANAGER · GROWTH · OPS", 15, C.accentDark, true), 0, 20));
 
-side.push(sp([
-  st("✓ ", { size: 15, color: C.green, bold: true }),
-  st("Authorized to work in France", { size: 14, color: C.green }),
-], { before: 0, after: 0 }));
-side.push(sp(st("   No sponsorship needed", { size: 14, color: C.green }), { before: 0, after: 40 }));
+// Work auth — single line
+S.push(p([t("✓ ", 14, C.green, true), t("Authorized to work in France", 13, C.green)], 0, 0));
+S.push(p(t("   No sponsorship needed", 13, C.green), 0, 20));
 
-side.push(sideHead("CONTACT"));
-side.push(sp(st("Paris, France")));
-side.push(sp(st("+33 7 45 43 23 95")));
-side.push(sp(st("gokul26222@gmail.com", { size: 16 })));
-side.push(new Paragraph({ spacing: { before: 20, after: 20 }, children: [sideLink("linkedin.com/in/gokulsrini", "https://www.linkedin.com/in/gokulsrini")] }));
-side.push(new Paragraph({ spacing: { before: 20, after: 20 }, children: [sideLink("Portfolio ↗", "https://portfolio-orcin-nu-xm2481apwv.vercel.app")] }));
+// CONTACT
+S.push(sHead("CONTACT"));
+S.push(p(t("Paris, France", 16, C.sidebarText), 10, 5));
+S.push(p(t("+33 7 45 43 23 95", 16, C.sidebarText), 5, 5));
+S.push(p(t("gokul26222@gmail.com", 15, C.sidebarText), 5, 5));
+S.push(p(link("linkedin.com/in/gokulsrini", "https://www.linkedin.com/in/gokulsrini", 15, C.accentDark), 5, 5));
+S.push(p(link("Portfolio ↗", "https://portfolio-orcin-nu-xm2481apwv.vercel.app", 15, C.accentDark), 5, 5));
 
-side.push(sideHead("LANGUAGES"));
-side.push(sp([st("English", { bold: true }), st(" — Fluent (C2)", { size: 15, color: C.sidebarMuted })]));
-side.push(sp([st("Tamil", { bold: true }), st(" — Native", { size: 15, color: C.sidebarMuted })]));
-side.push(sp([st("French", { bold: true }), st(" — A2, in training", { size: 15, color: C.sidebarMuted })]));
+// LANGUAGES
+S.push(sHead("LANGUAGES"));
+S.push(p([t("English", 16, C.sidebarText, true), t(" — Fluent (C2)", 14, C.sidebarMuted)], 10, 5));
+S.push(p([t("Tamil", 16, C.sidebarText, true), t(" — Native", 14, C.sidebarMuted)], 5, 5));
+S.push(p([t("French", 16, C.sidebarText, true), t(" — A2, in training", 14, C.sidebarMuted)], 5, 5));
 
-side.push(sideHead("EDUCATION"));
-side.push(sp(st("MSc International Business", { bold: true })));
-side.push(sp(st("EMLV Grande École, Paris", { size: 15, color: C.sidebarMuted }), { before: 0 }));
-side.push(sp(st("2023 – 2025", { size: 15, color: C.sidebarMuted }), { before: 0 }));
+// EDUCATION
+S.push(sHead("EDUCATION"));
+S.push(p(t("MSc International Business", 16, C.sidebarText, true), 10, 0));
+S.push(p(t("EMLV Grande École, Paris", 14, C.sidebarMuted), 0, 0));
+S.push(p(t("2023 – 2025", 14, C.sidebarMuted), 0, 5));
 
-side.push(sideHead("CERTIFICATIONS"));
-side.push(sp(st("Product Prioritization", { size: 16, bold: true })));
-side.push(sp(st("Product School", { size: 14, color: C.sidebarMuted }), { before: 0 }));
-side.push(sp(st("Agile Project Mgmt", { size: 16, bold: true }), { before: 50 }));
-side.push(sp(st("PMI France", { size: 14, color: C.sidebarMuted }), { before: 0 }));
-side.push(sp(st("HubSpot Inbound & Sales", { size: 16, bold: true }), { before: 50 }));
+// CERTIFICATIONS
+S.push(sHead("CERTIFICATIONS"));
+S.push(p(t("Product Prioritization", 15, C.sidebarText, true), 10, 0));
+S.push(p(t("Product School", 13, C.sidebarMuted), 0, 10));
+S.push(p(t("Agile Project Mgmt", 15, C.sidebarText, true), 10, 0));
+S.push(p(t("PMI France", 13, C.sidebarMuted), 0, 10));
+S.push(p(t("HubSpot Inbound & Sales", 15, C.sidebarText, true), 10, 0));
 
-side.push(sideHead("CORE TOOLS"));
-side.push(sp(st("Notion · Jira · Figma")));
-side.push(sp(st("Mixpanel · Amplitude")));
-side.push(sp(st("Google Analytics · Hotjar")));
+// CORE TOOLS
+S.push(sHead("CORE TOOLS"));
+S.push(p(t("Notion · Jira · Figma", 15, C.sidebarText), 10, 5));
+S.push(p(t("Mixpanel · Amplitude", 15, C.sidebarText), 5, 5));
+S.push(p(t("Google Analytics · Hotjar", 15, C.sidebarText), 5, 5));
 
-// ═══ MAIN COLUMN ═══
-const main = [];
+// ═══════════════════════════════════
+// MAIN COLUMN
+// ═══════════════════════════════════
+const R = [];
 
-main.push(mainHead("PROFILE"));
-main.push(mp(
-  mt("Product-minded business graduate with 3+ years across customer success, support engineering and sales. Building case studies and shipping real prototypes (Cleo, PlayPal) to prove product thinking through execution. MSc International Business, EMLV Paris. Based in Paris, fully authorized to work in France.", { size: 17 }),
-  { before: 40, after: 80 }
+// PROFILE
+R.push(mHead("PROFILE"));
+R.push(p(
+  t("Product-minded business graduate with 3+ years across customer success, support engineering and sales. Building case studies and shipping real prototypes (Cleo, PlayPal) to prove product thinking through execution. MSc International Business, EMLV Paris. Based in Paris, fully authorized to work in France.", 16, C.bodyText),
+  20, 40, { line: 230 }
 ));
 
-main.push(mainHead("PROJECTS"));
+// PROJECTS
+R.push(mHead("PROJECTS"));
 
-main.push(mp([
-  mt("Cleo", { size: 19, bold: true }),
-  mt(" — AI assistant for intl. students in France  ", { size: 16 }),
-  badge("LIVE"),
-], { before: 60, after: 0 }));
-main.push(mp(mt("Next.js · Gemini · Groq/Llama", { size: 15, color: C.grayText, italics: true }), { before: 0, after: 0 }));
-main.push(new Paragraph({ spacing: { before: 0, after: 30 }, children: [mainLink("cleo-app-theta.vercel.app", "https://cleo-app-theta.vercel.app")] }));
-main.push(bullet("Identified 400K+ intl. students/yr with no onboarding guide for CAF, CPAM, OFII & banking — shipped a free AI guide with a 7-day action plan."));
-main.push(bullet("Owned full lifecycle solo: discovery, PRD, LLM prompt design, API integration, UX, deployment, post-launch iteration."));
+R.push(p([t("Cleo", 18, C.bodyText, true), t(" — AI assistant for intl. students in France  ", 16, C.bodyText), badge("LIVE")], 30, 0));
+R.push(p(t("Next.js · Gemini · Groq/Llama", 14, C.grayText, false, true), 0, 0));
+R.push(p(link("cleo-app-theta.vercel.app", "https://cleo-app-theta.vercel.app", 14, C.accentLight), 0, 10));
+R.push(bul("Identified 400K+ intl. students/yr with no onboarding guide for CAF, CPAM, OFII & banking — shipped a free AI guide with a 7-day action plan."));
+R.push(bul("Owned full lifecycle solo: discovery, PRD, LLM prompt design, API integration, UX, deployment, iteration."));
 
-main.push(mp([
-  mt("PlayPal", { size: 19, bold: true }),
-  mt(" — social sports app for local matches  ", { size: 16 }),
-  badge("LIVE MVP"),
-], { before: 80, after: 0 }));
-main.push(mp(mt("React · Supabase · Lovable", { size: 15, color: C.grayText, italics: true }), { before: 0, after: 0 }));
-main.push(new Paragraph({ spacing: { before: 0, after: 30 }, children: [mainLink("sport-link-app.lovable.app", "https://sport-link-app.lovable.app")] }));
-main.push(bullet("Validated demand via user interviews, shipped end-to-end: PRD, user stories, MoSCoW roadmap, UX, launch. NSM: weekly active players per city."));
+R.push(p([t("PlayPal", 18, C.bodyText, true), t(" — social sports app for local matches  ", 16, C.bodyText), badge("LIVE MVP")], 40, 0));
+R.push(p(t("React · Supabase · Lovable", 14, C.grayText, false, true), 0, 0));
+R.push(p(link("sport-link-app.lovable.app", "https://sport-link-app.lovable.app", 14, C.accentLight), 0, 10));
+R.push(bul("Validated demand via user interviews, shipped end-to-end: PRD, user stories, MoSCoW roadmap, UX, launch. NSM: weekly active players per city."));
 
-main.push(mainHead("EXPERIENCE"));
+// EXPERIENCE
+R.push(mHead("EXPERIENCE"));
 
-main.push(mp(mt("Customer Success Manager", { size: 19, bold: true }), { before: 60, after: 0 }));
-main.push(mp(mt("Octopus Era, Paris · 2023 – 2024", { size: 15, color: C.grayText, italics: true }), { before: 0, after: 15 }));
-main.push(bullet("Managed €16K+ client portfolio across digital marketing engagements, delivering 90%+ on time and on scope."));
-main.push(bullet("Drove 20%+ account growth via proactive check-ins, upsell identification and QBRs aligned to client OKRs."));
+R.push(p(t("Customer Success Manager", 18, C.bodyText, true), 30, 0));
+R.push(p(t("Octopus Era, Paris · 2023 – 2024", 14, C.grayText, false, true), 0, 10));
+R.push(bul("Managed €16K+ client portfolio across digital marketing engagements, delivering 90%+ on time and on scope."));
+R.push(bul("Drove 20%+ account growth via proactive check-ins, upsell identification and QBRs aligned to client OKRs."));
 
-main.push(mp(mt("Product Support Engineer", { size: 19, bold: true }), { before: 80, after: 0 }));
-main.push(mp(mt("Vxceed Software, Bengaluru · 2021 – 2022", { size: 15, color: C.grayText, italics: true }), { before: 0, after: 15 }));
-main.push(bullet("Protected INR 2Cr+ (~€220K) revenue by resolving 50+ critical escalations; built 50-entry KB cutting repeat escalations ~33%."));
-main.push(bullet("Surfaced 12+ bug patterns from support data → 3 shipped fixes eliminating entire ticket classes."));
+R.push(p(t("Product Support Engineer", 18, C.bodyText, true), 40, 0));
+R.push(p(t("Vxceed Software, Bengaluru · 2021 – 2022", 14, C.grayText, false, true), 0, 10));
+R.push(bul("Protected INR 2Cr+ (~€220K) revenue by resolving 50+ critical escalations; built 50-entry KB cutting repeat escalations ~33%."));
+R.push(bul("Surfaced 12+ bug patterns from support data → 3 shipped fixes eliminating entire ticket classes."));
 
-main.push(mp(mt("Sales & Marketing Intern", { size: 19, bold: true }), { before: 80, after: 0 }));
-main.push(mp(mt("iCell, Paris · 2025 – 2026 (part-time)", { size: 15, color: C.grayText, italics: true }), { before: 0, after: 15 }));
-main.push(bullet("Designed 15+ content campaigns across 3 seasonal pushes; tracked 8 competitors weekly in market intel report informing pricing."));
+R.push(p(t("Sales & Marketing Intern", 18, C.bodyText, true), 40, 0));
+R.push(p(t("iCell, Paris · 2025 – 2026 (part-time)", 14, C.grayText, false, true), 0, 10));
+R.push(bul("Designed 15+ content campaigns across 3 seasonal pushes; tracked 8 competitors weekly in market intel report informing pricing."));
 
-main.push(mainHead("PRODUCT CASE STUDIES"));
-main.push(mp([
-  mt("PhotoRoom ", { size: 17, bold: true }),
-  mt("(pricing): diagnosed flat-rate subs vs. rising AI compute costs; designed 3-layer monetisation fix.", { size: 16 }),
-], { before: 40, after: 15 }));
-main.push(mp([
-  mt("Joko ", { size: 17, bold: true }),
-  mt("(retention): redesigned milestone loop to break 30-day churn, drive daily engagement (4M+ users).", { size: 16 }),
-], { before: 15, after: 15 }));
-main.push(mp([
-  mt("Netflix ", { size: 17, bold: true }),
-  mt("(Gen Z growth): designed short-form clips feed converting scroll attention to full-title viewing (270M+ subs).", { size: 16 }),
-], { before: 15, after: 15 }));
-main.push(new Paragraph({
-  spacing: { before: 15, after: 30 },
-  children: [mt("All case studies: ", { size: 15, color: C.grayText }), mainLink("portfolio-orcin-nu-xm2481apwv.vercel.app", "https://portfolio-orcin-nu-xm2481apwv.vercel.app")],
-}));
+// CASE STUDIES
+R.push(mHead("PRODUCT CASE STUDIES"));
+R.push(p([t("PhotoRoom ", 16, C.bodyText, true), t("(pricing): diagnosed flat-rate subs vs. rising AI compute costs; designed 3-layer monetisation fix.", 15, C.bodyText)], 20, 10, { line: 230 }));
+R.push(p([t("Joko ", 16, C.bodyText, true), t("(retention): redesigned milestone loop to break 30-day churn, drive daily engagement (4M+ users).", 15, C.bodyText)], 10, 10, { line: 230 }));
+R.push(p([t("Netflix ", 16, C.bodyText, true), t("(Gen Z growth): designed short-form clips feed converting scroll attention to full-title viewing (270M+ subs).", 15, C.bodyText)], 10, 10, { line: 230 }));
+R.push(p([t("All case studies: ", 14, C.grayText), link("portfolio-orcin-nu-xm2481apwv.vercel.app", "https://portfolio-orcin-nu-xm2481apwv.vercel.app", 14, C.accentLight)], 10, 10));
 
-// ═══ ASSEMBLE ═══
+// ═══════════════════════════════════
+// ASSEMBLE
+// ═══════════════════════════════════
 const mainTable = new Table({
   rows: [new TableRow({
     children: [
       new TableCell({
-        width: { size: SIDE_W, type: WidthType.DXA },
+        width: { size: SW, type: WidthType.DXA },
         shading: { type: ShadingType.CLEAR, fill: C.sidebarBg },
-        borders: noBorders,
+        borders: noBs,
         verticalAlign: VerticalAlign.TOP,
-        margins: { top: 120, bottom: 120, left: 220, right: 180 },
-        children: side,
+        margins: { top: 80, bottom: 80, left: 200, right: 160 },
+        children: S,
       }),
       new TableCell({
-        width: { size: MAIN_W, type: WidthType.DXA },
+        width: { size: MW, type: WidthType.DXA },
         shading: { type: ShadingType.CLEAR, fill: "FFFFFF" },
-        borders: noBorders,
+        borders: noBs,
         verticalAlign: VerticalAlign.TOP,
-        margins: { top: 120, bottom: 120, left: 240, right: 180 },
-        children: main,
+        margins: { top: 80, bottom: 80, left: 220, right: 140 },
+        children: R,
       }),
     ],
   })],
-  width: { size: CONTENT_W, type: WidthType.DXA },
+  width: { size: CW, type: WidthType.DXA },
   layout: TableLayoutType.FIXED,
-  borders: { top: noBorder, bottom: noBorder, left: noBorder, right: noBorder, insideHorizontal: noBorder, insideVertical: noBorder },
+  borders: { top: noB, bottom: noB, left: noB, right: noB, insideHorizontal: noB, insideVertical: noB },
 });
 
+// Skills — full width
 const skills = [];
-skills.push(new Paragraph({
-  spacing: { before: 160, after: 70 },
-  children: [new TextRun({ text: "KEY SKILLS & KEYWORDS", bold: true, size: 19, font: FONT, color: C.accentLight, allCaps: true })],
+skills.push(p(t("KEY SKILLS & KEYWORDS", 18, C.accentLight, true), 100, 40, {
   border: { bottom: { style: BorderStyle.SINGLE, size: 1, color: C.accentLight } },
 }));
 
-const skillData = [
-  ["Product", "PRD writing · product discovery · user research & JTBD · user story mapping · roadmapping · OKRs · RICE · MVP scoping · SDLC · backlog mgmt"],
+const sd = [
+  ["Product", "PRD writing · product discovery · user research & JTBD · story mapping · roadmapping · OKRs · RICE · MVP scoping · SDLC · backlog mgmt"],
   ["Growth & Data", "activation & retention funnels · cohort analysis · A/B testing · North Star Metrics · product analytics · GTM strategy · AARRR"],
   ["AI / LLM", "LLM product design · AI agent workflows · prompt engineering · RAG · AI-assisted prototyping (Lovable, Cursor, Claude, GPT-4o, Gemini)"],
   ["Tools", "SQL · REST API · Supabase · Vercel · Sheets · Jira · Confluence · Notion · Figma · Miro · Mixpanel · Amplitude · GA · Hotjar · HubSpot · Agile/Scrum"],
 ];
 
-for (const [label, detail] of skillData) {
-  skills.push(new Paragraph({
-    spacing: { before: 20, after: 20 },
-    children: [
-      mt(`${label}: `, { size: 15, bold: true }),
-      mt(detail, { size: 14, color: C.grayText }),
-    ],
-  }));
+for (const [label, detail] of sd) {
+  skills.push(p([t(`${label}: `, 15, C.bodyText, true), t(detail, 14, C.grayText)], 8, 8, { line: 220 }));
 }
 
 const doc = new Document({
@@ -294,7 +253,7 @@ const doc = new Document({
     properties: {
       page: {
         size: { width: A4_W, height: A4_H, orientation: "portrait" },
-        margin: { top: MARGIN, bottom: MARGIN, left: MARGIN, right: MARGIN },
+        margin: { top: M, bottom: M, left: M, right: M },
       },
     },
     children: [mainTable, ...skills],
